@@ -1,0 +1,7 @@
+node_modules
+/dist
+/www
+/shared
+package-lock.json
+.build
+.swiftpm

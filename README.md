@@ -1,0 +1,66 @@
+# Cordova Native UI
+
+Thin Cordova adapter for the shared Native UI implementation in [capacitor-plugin](https://github.com/webview-native-ui/capacitor-plugin). Capacitor remains the primary implementation. This package adds Cordova callbacks, event subscriptions, installation metadata and lifecycle cleanup; it does not fork the renderers.
+
+## Requirements
+
+- Cordova CLI 13, cordova-ios 8.1+ with Swift Package Manager, or cordova-android 15+.
+- iOS native rendering requires iOS 26+ and Xcode 26+; older iOS uses the shared Web fallback. CocoaPods and older Cordova versions are not supported in this initial adapter.
+- Android API 24+, SDK 36, JDK 21, Kotlin 2.2.20 and Compose. Android supports the shared app-local Compose extension path, not the iOS native toolbar/search feature set.
+
+Add these preferences to your Cordova application's `config.xml` for Android:
+
+```xml
+<preference name="GradlePluginKotlinEnabled" value="true" />
+<preference name="GradlePluginKotlinVersion" value="2.2.20" />
+<preference name="AndroidGradlePluginVersion" value="8.13.0" />
+<preference name="AndroidJavaSourceCompatibility" value="21" />
+<preference name="AndroidJavaTargetCompatibility" value="21" />
+<preference name="AndroidKotlinJVMTarget" value="21" />
+```
+
+## Local installation
+
+This initial package has not been published. In this repository, run:
+
+```sh
+npm ci
+npm test
+npm run test:package
+npm pack
+```
+
+Extract the archive into a temporary directory, then install its `package` directory with `cordova plugin add /absolute/path/to/package`. This exercises the shipped files without requiring Core's development dependencies. A developer checkout can also be installed with `cordova plugin add /absolute/path/to/cordova-plugin` after `npm ci`.
+
+Cordova loads `window.NativeUI` from the bundled JavaScript module. Start after `deviceready`:
+
+```js
+document.addEventListener('deviceready', async () => {
+  const handle = await window.NativeUI.enableNativeUI();
+  // Call await handle.destroy() when your application permanently stops using it.
+});
+```
+
+Bundled applications can import `enableNativeUI` from `@rdlabo/cordova-native-ui/core` (standard HTML), or the package root (Ionic integration). Use one entry style in an application. The `/integration` and `/vertical-bars` subpaths mirror the shared APIs. The browser bundle includes its JavaScript dependencies; npm ESM imports use the declared Engine/theme-utils dependencies. No Capacitor JavaScript runtime is required.
+
+App-local Swift renderers use `import CordovaNativeUI` and `NativeUI.register(...)`. Android renderers retain the shared `dev.rdlabo.capacitor.nativeui.NativeUI` namespace for compatibility; this name does not imply an Android Capacitor SDK dependency. See the [shared extension documentation](https://github.com/webview-native-ui/capacitor-plugin/blob/main/docs/native-ui-extensions.md) for renderer contracts.
+
+## Shared source and updates
+
+The initial version deliberately uses generated copies. The Core commit is pinned in `devDependencies` and `package-lock.json`; `npm run build` compiles its TypeScript and copies its Swift/Kotlin unchanged into `shared/`. `shared/ORIGIN.json` records provenance. Only `src/` contains Cordova-owned implementation. Do not edit generated `shared/`, `dist/` or `www/` files.
+
+Directly depending on the Capacitor repository's Core SPM product conflicts with cordova-ios because its dependency graph also contains capacitor-swift-pm's `Cordova` target. The local Core target avoids that graph collision while preserving one upstream editing source. This repository is installed through Cordova, not directly as a GitHub Swift Package: its shared Swift assets are generated during preparation.
+
+To update Core, change the pinned Git commit, run `npm install`, then `npm run build`, `npm test`, `npm run test:package` and both native checks. All three languages use the same upstream commit; native archive checks compare the copies byte-for-byte. Publishing a new Cordova package is required to distribute a Core update. If this becomes costly, move Core into an independently versioned package rather than adding manual patches here.
+
+## Validation
+
+```sh
+npm run lint
+npm test
+npm run test:package
+node scripts/verify-native.mjs ios
+node scripts/verify-native.mjs android
+```
+
+Native checks install an actual npm archive into a temporary Cordova application and build it. Android uses `gradle` from PATH, or the explicit `NATIVE_UI_GRADLE` executable. The fixture exercises configuration, callbacks, listener disposal, invalid listener requests and a full WebView reload; it reports `NATIVE_UI_SMOKE_OK` when launched. CI builds both real consumers. Shared renderer tests remain upstream; this package tests the adapter boundary and distribution paths.

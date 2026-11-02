@@ -1,0 +1,9 @@
+node_modules/
+/dist/
+/www/
+/shared/
+.build/
+.swiftpm/
+Package.resolved
+*.tgz
+artifacts/

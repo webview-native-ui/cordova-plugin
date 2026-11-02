@@ -1,0 +1,52 @@
+name: Cordova plugin CI
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  javascript:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npm run lint
+      - run: npm test
+      - run: npm run test:package
+  native:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: ios
+            runner: macos-26
+          - platform: android
+            runner: ubuntu-latest
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: npm
+      - uses: actions/setup-java@v5
+        if: matrix.platform == 'android'
+        with:
+          distribution: temurin
+          java-version: '21'
+      - uses: android-actions/setup-android@v3
+        if: matrix.platform == 'android'
+      - uses: gradle/actions/setup-gradle@v4
+        if: matrix.platform == 'android'
+        with:
+          gradle-version: '8.14.3'
+      - run: sdkmanager 'platforms;android-36' 'build-tools;36.0.0'
+        if: matrix.platform == 'android'
+      - run: npm ci
+      - run: node scripts/verify-native.mjs ${{ matrix.platform }}

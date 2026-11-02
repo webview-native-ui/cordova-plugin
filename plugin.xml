@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<plugin xmlns="http://apache.org/cordova/ns/plugins/1.0" id="cordova-plugin-native-ui" version="0.1.0">
+  <name>Native UI</name>
+  <description>Shared WebView native UI rendering for Cordova</description>
+  <license>MIT</license>
+  <engines>
+    <engine name="cordova" version=">=13.0.0" />
+    <engine name="cordova-ios" version=">=8.1.0" />
+    <engine name="cordova-android" version=">=15.0.0" />
+  </engines>
+  <js-module src="www/native-ui.js" name="NativeUI"><clobbers target="NativeUI" /></js-module>
+  <platform name="ios" package="swift">
+    <config-file target="config.xml" parent="/*">
+      <feature name="NativeUI"><param name="ios-package" value="CDVNativeUI" /><param name="onload" value="true" /></feature>
+    </config-file>
+    <source-file src="src/ios/NativeUIPlugin.swift" />
+  </platform>
+  <platform name="android">
+    <config-file target="res/xml/config.xml" parent="/*">
+      <feature name="NativeUI"><param name="android-package" value="dev.rdlabo.cordova.nativeui.NativeUIPlugin" /><param name="onload" value="true" /></feature>
+    </config-file>
+    <source-file src="src/android/NativeUIPlugin.kt" target-dir="app/src/main/java/dev/rdlabo/cordova/nativeui" />
+    <source-file src="shared/android/dev/rdlabo/nativeui/core/NativeUI.kt" target-dir="app/src/main/java/dev/rdlabo/capacitor/nativeui" />
+    <source-file src="shared/android/dev/rdlabo/nativeui/core/NativeUICall.kt" target-dir="app/src/main/java/dev/rdlabo/capacitor/nativeui" />
+    <source-file src="shared/android/dev/rdlabo/nativeui/core/NativeUIController.kt" target-dir="app/src/main/java/dev/rdlabo/capacitor/nativeui" />
+    <source-file src="shared/android/dev/rdlabo/nativeui/core/NativeUISnapshot.kt" target-dir="app/src/main/java/dev/rdlabo/capacitor/nativeui" />
+    <framework src="src/android/native-ui.gradle" custom="true" type="gradleReference" />
+  </platform>
+</plugin>
