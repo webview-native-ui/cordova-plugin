@@ -21,7 +21,7 @@ try {
   assert(xml.includes(`version="${manifest.version}"`));
   const definitions = ts.createSourceFile(
     'definitions.ts',
-    readFileSync('node_modules/@rdlabo/capacitor-native-ui/packages/native-ui-core/src/native/definitions.ts', 'utf8'),
+    readFileSync('.upstream/packages/native-ui-core/src/native/definitions.ts', 'utf8'),
     ts.ScriptTarget.Latest,
     true,
   );
@@ -46,8 +46,8 @@ try {
       else assert.equal(readFileSync(output, 'utf8'), readFileSync(input, 'utf8'), output);
     }
   }
-  verifyTree('node_modules/@rdlabo/capacitor-native-ui/android/src/main/java/shared-core', join(root, 'shared/android'));
-  verifyTree('node_modules/@rdlabo/capacitor-native-ui/packages/native-ui-core/ios/Sources/NativeUICore', join(root, 'shared/ios'));
+  verifyTree('.upstream/packages/native-ui-core/android/src/main/java', join(root, 'shared/android'));
+  verifyTree('.upstream/packages/native-ui-core/ios/Sources/NativeUICore', join(root, 'shared/ios'));
   for (const name of Object.keys(manifest.dependencies)) {
     const target = join(root, 'node_modules', name);
     mkdirSync(dirname(target), { recursive: true });
@@ -81,7 +81,7 @@ try {
   assert.equal(typeof module.exports.enableNativeUI, 'function');
   assert.equal(typeof module.exports.defineNativeUI, 'function');
   const origin = JSON.parse(readFileSync(join(root, 'shared/ORIGIN.json'), 'utf8'));
-  assert.equal(origin.revision, manifest.devDependencies['@rdlabo/capacitor-native-ui'].split('#')[1]);
+  assert.equal(origin.revision, JSON.parse(readFileSync('core-source.json', 'utf8')).revision);
   console.log('Cordova archive resources, bundled API, Core provenance and native sources verified.');
 } finally {
   rmSync(temporary, { recursive: true, force: true });

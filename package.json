@@ -27,8 +27,7 @@
     "plugin.xml",
     "Package.swift",
     "LICENSE",
-    "README.md",
-    "scripts/prepare.mjs"
+    "README.md"
   ],
   "exports": {
     ".": {
@@ -54,7 +53,7 @@
     "lint": "prettier --check .",
     "test:package": "node scripts/verify-package.mjs",
     "prepack": "npm run build",
-    "prepare": "node scripts/prepare.mjs"
+    "fetch:core": "node scripts/fetch-core.mjs"
   },
   "dependencies": {
     "@webview-native-ui/engine": "^1.0.0",
@@ -69,7 +68,6 @@
     }
   },
   "devDependencies": {
-    "@rdlabo/capacitor-native-ui": "git+https://github.com/webview-native-ui/capacitor-plugin.git#965b7797c7f3cf177addd384d5d89557f0433d4a",
     "@ionic/core": "8.8.19",
     "cordova": "13.0.0",
     "cordova-ios": "8.1.1",

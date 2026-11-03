@@ -1,11 +1,13 @@
+import { execFileSync } from 'node:child_process';
 import { cpSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { resolve, join } from 'node:path';
 import ts from 'typescript';
 import { build } from 'esbuild';
 
-const upstream = resolve('node_modules/@rdlabo/capacitor-native-ui');
-const manifest = JSON.parse(readFileSync('package.json', 'utf8'));
-const revision = manifest.devDependencies['@rdlabo/capacitor-native-ui'].split('#')[1];
+const upstream = resolve('.upstream');
+const { repository, revision } = JSON.parse(readFileSync('core-source.json', 'utf8'));
+const actual = execFileSync('git', ['-C', upstream, 'rev-parse', 'HEAD'], { encoding: 'utf8' }).trim();
+if (actual !== revision) throw new Error('Core checkout differs from core-source.json; run npm run fetch:core');
 for (const path of ['dist', 'www', 'shared']) rmSync(path, { recursive: true, force: true });
 function compile(root, output) {
   const options = {
@@ -34,13 +36,10 @@ function compile(root, output) {
     );
 }
 compile(join(upstream, 'packages/native-ui-core/src'), 'shared/core');
-cpSync(join(upstream, 'android/src/main/java/shared-core'), 'shared/android', { recursive: true });
+cpSync(join(upstream, 'packages/native-ui-core/android/src/main/java'), 'shared/android', { recursive: true });
 cpSync(join(upstream, 'packages/native-ui-core/ios/Sources/NativeUICore'), 'shared/ios', { recursive: true });
 cpSync(join(upstream, 'LICENSE'), 'shared/LICENSE');
-writeFileSync(
-  'shared/ORIGIN.json',
-  JSON.stringify({ repository: 'https://github.com/webview-native-ui/capacitor-plugin', revision }, null, 2) + '\n',
-);
+writeFileSync('shared/ORIGIN.json', JSON.stringify({ repository, revision }, null, 2) + '\n');
 compile('src', 'dist');
 mkdirSync('www', { recursive: true });
 await build({
