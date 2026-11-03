@@ -80,7 +80,7 @@ try {
   mkdirSync(dirname(ionicPeer), { recursive: true });
   symlinkSync(resolve('node_modules/@ionic/core'), ionicPeer, 'dir');
   const consumer = join(temporary, 'consumer');
-  mkdirSync(join(consumer, 'node_modules/@webview-ui-native'), { recursive: true });
+  mkdirSync(dirname(join(consumer, 'node_modules', manifest.name)), { recursive: true });
   symlinkSync(root, join(consumer, 'node_modules', manifest.name), 'dir');
   const themeBuild = await build({
     stdin: {

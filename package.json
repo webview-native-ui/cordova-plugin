@@ -1,5 +1,5 @@
 {
-  "name": "@webview-ui-native/cordova-plugin",
+  "name": "@webview-native-ui/cordova-plugin",
   "version": "0.1.0",
   "description": "Cordova adapter for WebView Native UI Core",
   "type": "module",

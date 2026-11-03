@@ -39,7 +39,7 @@ For a bundled application, also install the same archive into the npm project th
 
 ```sh
 # Run in the Web application's npm project; use the archive produced above.
-npm install /absolute/path/to/webview-ui-native-cordova-plugin-0.1.0.tgz
+npm install /absolute/path/to/webview-native-ui-cordova-plugin-0.1.0.tgz
 ```
 
 The npm install makes imports available to your bundler; `cordova plugin add` installs the native plugin. Use the same package version for both. Keep `<script src="cordova.js"></script>` in your Cordova entry HTML, build your Web assets into the application's `www` directory, then run `cordova prepare` and rebuild the native app. Reloading Web assets alone does not update native code.
@@ -53,7 +53,7 @@ document.addEventListener('deviceready', async () => {
 });
 ```
 
-Bundled applications can import `enableNativeUI` from `@webview-ui-native/cordova-plugin/core` (standard HTML), or the package root (Ionic integration). Use one entry style in an application. The `/integration` and `/vertical-bars` subpaths mirror the shared APIs. The browser bundle includes its JavaScript dependencies; npm ESM imports use the declared runtime dependencies. No Capacitor JavaScript runtime is required.
+Bundled applications can import `enableNativeUI` from `@webview-native-ui/cordova-plugin/core` (standard HTML), or the package root (Ionic integration). Use one entry style in an application. The `/integration` and `/vertical-bars` subpaths mirror the shared APIs. The browser bundle includes its JavaScript dependencies; npm ESM imports use the declared runtime dependencies. No Capacitor JavaScript runtime is required.
 
 App-local Swift renderers use `import CordovaNativeUI` and `NativeUI.register(...)`. Android renderers retain the shared `dev.rdlabo.capacitor.nativeui.NativeUI` namespace for compatibility; this name does not imply an Android Capacitor SDK dependency. See the [shared extension documentation](https://github.com/webview-native-ui/capacitor-plugin/blob/main/docs/native-ui-extensions.md) for renderer contracts.
 
@@ -68,8 +68,8 @@ The plugin includes a Cordova-ready copy of `@rdlabo/ionic-theme-ios27@2.1.0`. I
 
 ```ts
 import { initialize } from '@ionic/core/components/index.js';
-import { enableNativeUI } from '@webview-ui-native/cordova-plugin';
-import { iosTransitionAnimation, popoverEnterAnimation, popoverLeaveAnimation } from '@webview-ui-native/cordova-plugin/theme';
+import { enableNativeUI } from '@webview-native-ui/cordova-plugin';
+import { iosTransitionAnimation, popoverEnterAnimation, popoverLeaveAnimation } from '@webview-native-ui/cordova-plugin/theme';
 
 // For an application using Ionic web components directly, before mounting:
 initialize({
@@ -95,15 +95,15 @@ Keep Ionic's base CSS, then load the matching theme styles:
 
 ```css
 @import '@ionic/core/css/palettes/dark.system.css';
-@import '@webview-ui-native/cordova-plugin/theme/css/default-variables.css';
-@import '@webview-ui-native/cordova-plugin/theme/css/ionic-theme-ios27.css';
-@import '@webview-ui-native/cordova-plugin/theme/css/md-remove-ios-class-effect.css';
-@import '@webview-ui-native/cordova-plugin/theme/css/ionic-theme-ios27-dark-system.css';
+@import '@webview-native-ui/cordova-plugin/theme/css/default-variables.css';
+@import '@webview-native-ui/cordova-plugin/theme/css/ionic-theme-ios27.css';
+@import '@webview-native-ui/cordova-plugin/theme/css/md-remove-ios-class-effect.css';
+@import '@webview-native-ui/cordova-plugin/theme/css/ionic-theme-ios27-dark-system.css';
 ```
 
 Configure Ionic with the theme animations before mounting the app, and call `enableNativeUI()` after `deviceready` and `ion-app` mounting. Existing theme users replace their theme JS/CSS imports with the paths above and remove the old integration alias. All theme helpers and styles come from the same pinned version. Native UI and the theme share one integration module automatically.
 
-Optional helpers such as `attachTabBarSearchable` are also exported from `/theme`; importing the theme does not automatically attach those behaviors. If you use class-based dark mode, replace both system palette imports with `@ionic/core/css/palettes/dark.class.css` and `@webview-ui-native/cordova-plugin/theme/css/ionic-theme-ios27-dark-class.css` and toggle `ion-palette-dark` on `html`.
+Optional helpers such as `attachTabBarSearchable` are also exported from `/theme`; importing the theme does not automatically attach those behaviors. If you use class-based dark mode, replace both system palette imports with `@ionic/core/css/palettes/dark.class.css` and `@webview-native-ui/cordova-plugin/theme/css/ionic-theme-ios27-dark-class.css` and toggle `ion-palette-dark` on `html`.
 
 The theme entry is for bundled applications. Do not mix its npm runtime with a separate `window.NativeUI.enableNativeUI()` runtime.
 
