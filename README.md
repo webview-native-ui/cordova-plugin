@@ -52,8 +52,6 @@ On iOS, the adapter uses the same full-WebView coordinate space as Capacitor
 CSS, for example with `env(safe-area-inset-top)`, rather than relying on automatic
 scroll-view insets.
 
-For side-by-side runtime checks, see [the Capacitor/Cordova comparison procedure](fixtures/ios-parity/README.md).
-
 ## Ionic iOS27 theme integration
 
 The plugin includes a Cordova-ready copy of the iOS27 theme. Install this package alongside your existing Ionic dependencies; no separate theme package or bundler alias is required.
@@ -80,7 +78,7 @@ Keep Ionic's base CSS, then load the matching theme styles:
 
 Configure Ionic with the theme animations before mounting the app, and call `enableNativeUI()` after `deviceready` and `ion-app` mounting. Existing theme users replace their theme JS/CSS imports with the paths above and remove the old integration alias. All theme helpers and styles come from the same pinned version. Native UI and the theme share one integration module automatically.
 
-The theme entry is for bundled applications. Do not mix its npm runtime with a separate `window.NativeUI.enableNativeUI()` runtime. See [Ionic/theme runtime comparison](fixtures/ionic-parity/README.md) for runnable consumer checks and their coverage.
+The theme entry is for bundled applications. Do not mix its npm runtime with a separate `window.NativeUI.enableNativeUI()` runtime.
 
 ## Shared source and updates
 

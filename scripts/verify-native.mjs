@@ -24,7 +24,7 @@ config = config.replace(
 </widget>`,
 );
 writeFileSync(join(app, 'config.xml'), config);
-cpSync(resolve(process.env.NATIVE_UI_FIXTURE || 'fixtures/www'), join(app, 'www'), { recursive: true });
+cpSync(resolve('fixtures/www'), join(app, 'www'), { recursive: true });
 const [archive] = JSON.parse(
   execFileSync('npm', ['pack', '--ignore-scripts', '--json', '--pack-destination', temporary], { cwd: root, encoding: 'utf8' }),
 );
