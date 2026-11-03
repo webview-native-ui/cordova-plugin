@@ -1,0 +1,80 @@
+{
+  "name": "@rdlabo/cordova-native-ui",
+  "version": "0.1.0",
+  "description": "Cordova adapter for WebView Native UI Core",
+  "type": "module",
+  "license": "MIT",
+  "author": "Masahiko Sakakibara <sakakibara@rdlabo.jp>",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/webview-native-ui/cordova-plugin.git"
+  },
+  "cordova": {
+    "id": "cordova-plugin-native-ui",
+    "platforms": [
+      "ios",
+      "android"
+    ]
+  },
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist",
+    "www",
+    "shared",
+    "src/ios",
+    "src/android",
+    "plugin.xml",
+    "Package.swift",
+    "LICENSE",
+    "README.md"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./core": {
+      "types": "./dist/core.d.ts",
+      "import": "./dist/core.js"
+    },
+    "./integration": {
+      "types": "./shared/core/native-integration/index.d.ts",
+      "import": "./shared/core/native-integration/index.js"
+    },
+    "./vertical-bars": {
+      "types": "./dist/vertical-bars.d.ts",
+      "import": "./dist/vertical-bars.js"
+    }
+  },
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "test": "vitest run",
+    "lint": "prettier --check .",
+    "test:package": "node scripts/verify-package.mjs",
+    "prepack": "npm run build",
+    "fetch:core": "node scripts/fetch-core.mjs"
+  },
+  "dependencies": {
+    "@webview-native-ui/engine": "^1.0.0",
+    "@rdlabo/ionic-theme-utils": "0.1.5"
+  },
+  "peerDependencies": {
+    "@ionic/core": ">=8.8.1 <10"
+  },
+  "peerDependenciesMeta": {
+    "@ionic/core": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "@ionic/core": "8.8.19",
+    "cordova": "13.0.0",
+    "cordova-ios": "8.1.1",
+    "cordova-android": "15.1.0",
+    "typescript": "^5.9.3",
+    "esbuild": "0.28.1",
+    "vitest": "^4.0.0",
+    "prettier": "^3.6.2"
+  }
+}
