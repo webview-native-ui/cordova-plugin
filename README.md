@@ -6,6 +6,7 @@ Thin Cordova adapter for the shared Native UI implementation in [capacitor-plugi
 
 - Cordova CLI 13, cordova-ios 8.1+ with Swift Package Manager, or cordova-android 15+.
 - iOS native rendering requires iOS 26+ and Xcode 26+; older iOS uses the shared Web fallback. CocoaPods and older Cordova versions are not supported in this initial adapter.
+- Ionic integration/theme: `@ionic/core >=8.8.1 <10` in the application. The `/core` entry does not require Ionic.
 - Android API 24+, SDK 36, JDK 21, Kotlin 2.2.20 and Compose. Android supports the shared app-local Compose extension path, not the iOS native toolbar/search feature set.
 
 Add these preferences to your Cordova application's `config.xml` for Android:
@@ -34,6 +35,15 @@ npm pack
 
 Extract the archive into a temporary directory, then install its `package` directory with `cordova plugin add /absolute/path/to/package`. This exercises the shipped files without requiring Core's development dependencies. A developer checkout can also be installed with `cordova plugin add /absolute/path/to/cordova-plugin` after the fetch and build steps above. Direct Git URL installation is not supported; install the prepared archive instead.
 
+For a bundled application, also install the same archive into the npm project that builds your Web assets:
+
+```sh
+# Run in the Web application's npm project; use the archive produced above.
+npm install /absolute/path/to/webview-ui-native-cordova-plugin-0.1.0.tgz
+```
+
+The npm install makes imports available to your bundler; `cordova plugin add` installs the native plugin. Use the same package version for both. Keep `<script src="cordova.js"></script>` in your Cordova entry HTML, build your Web assets into the application's `www` directory, then run `cordova prepare` and rebuild the native app. Reloading Web assets alone does not update native code.
+
 Cordova loads `window.NativeUI` from the bundled JavaScript module. Start after `deviceready`:
 
 ```js
@@ -43,7 +53,7 @@ document.addEventListener('deviceready', async () => {
 });
 ```
 
-Bundled applications can import `enableNativeUI` from `@webview-ui-native/cordova-plugin/core` (standard HTML), or the package root (Ionic integration). Use one entry style in an application. The `/integration` and `/vertical-bars` subpaths mirror the shared APIs. The browser bundle includes its JavaScript dependencies; npm ESM imports use the declared Engine/theme-utils dependencies. No Capacitor JavaScript runtime is required.
+Bundled applications can import `enableNativeUI` from `@webview-ui-native/cordova-plugin/core` (standard HTML), or the package root (Ionic integration). Use one entry style in an application. The `/integration` and `/vertical-bars` subpaths mirror the shared APIs. The browser bundle includes its JavaScript dependencies; npm ESM imports use the declared runtime dependencies. No Capacitor JavaScript runtime is required.
 
 App-local Swift renderers use `import CordovaNativeUI` and `NativeUI.register(...)`. Android renderers retain the shared `dev.rdlabo.capacitor.nativeui.NativeUI` namespace for compatibility; this name does not imply an Android Capacitor SDK dependency. See the [shared extension documentation](https://github.com/webview-native-ui/capacitor-plugin/blob/main/docs/native-ui-extensions.md) for renderer contracts.
 
@@ -54,17 +64,32 @@ scroll-view insets.
 
 ## Ionic iOS27 theme integration
 
-The plugin includes a Cordova-ready copy of the iOS27 theme. Install this package alongside your existing Ionic dependencies; no separate theme package or bundler alias is required.
+The plugin includes a Cordova-ready copy of `@rdlabo/ionic-theme-ios27@2.1.0`. Install this package alongside your existing Ionic dependencies; no separate theme package or bundler alias is required.
 
 ```ts
+import { initialize } from '@ionic/core/components/index.js';
 import { enableNativeUI } from '@webview-ui-native/cordova-plugin';
-import {
-  iosTransitionAnimation,
-  popoverEnterAnimation,
-  popoverLeaveAnimation,
-  attachTabBarSearchable,
-} from '@webview-ui-native/cordova-plugin/theme';
+import { iosTransitionAnimation, popoverEnterAnimation, popoverLeaveAnimation } from '@webview-ui-native/cordova-plugin/theme';
+
+// For an application using Ionic web components directly, before mounting:
+initialize({
+  mode: 'ios',
+  navAnimation: iosTransitionAnimation,
+  popoverEnter: popoverEnterAnimation,
+  popoverLeave: popoverLeaveAnimation,
+});
+
+// Register this during startup. appMounted resolves when your app has mounted ion-app.
+const deviceReady = new Promise<void>((resolve) => {
+  document.addEventListener('deviceready', () => resolve(), { once: true });
+});
+export async function startNativeUI(appMounted: Promise<void>) {
+  await Promise.all([deviceReady, appMounted]);
+  return enableNativeUI();
+}
 ```
+
+Call `startNativeUI()` once from your application's startup and retain its returned handle; call `await handle.destroy()` when permanently stopping Native UI. `appMounted` is supplied by your application's mount lifecycle, not by this package. For Ionic Angular/React/Vue, pass the same animation configuration through the framework's Ionic initialization instead of separately calling `initialize()`. Continue using your framework's normal component registration.
 
 Keep Ionic's base CSS, then load the matching theme styles:
 
@@ -78,7 +103,20 @@ Keep Ionic's base CSS, then load the matching theme styles:
 
 Configure Ionic with the theme animations before mounting the app, and call `enableNativeUI()` after `deviceready` and `ion-app` mounting. Existing theme users replace their theme JS/CSS imports with the paths above and remove the old integration alias. All theme helpers and styles come from the same pinned version. Native UI and the theme share one integration module automatically.
 
+Optional helpers such as `attachTabBarSearchable` are also exported from `/theme`; importing the theme does not automatically attach those behaviors. If you use class-based dark mode, replace both system palette imports with `@ionic/core/css/palettes/dark.class.css` and `@webview-ui-native/cordova-plugin/theme/css/ionic-theme-ios27-dark-class.css` and toggle `ion-palette-dark` on `html`.
+
 The theme entry is for bundled applications. Do not mix its npm runtime with a separate `window.NativeUI.enableNativeUI()` runtime.
+
+## Behavior and troubleshooting
+
+Supported Ionic controls can render natively on iOS 26+. Android standard controls keep their Web presentation; app-local Compose extensions are a separate capability. Unsupported controls also retain Web presentation. Styling the page with the theme does not imply every control becomes native.
+
+- **Imports cannot resolve:** install the prepared archive into the Web application's npm project as well as adding the Cordova plugin. Source-only Git installation does not contain generated assets.
+- **Native UI stays in Web mode on supported iOS:** check that `cordova.js` is loaded, startup waits for `deviceready`, and the native app was rebuilt after plugin installation. Inspect `handle.getStatus()`.
+- **Theme helpers do not coordinate with native controls:** use `/theme` for all theme imports and start only one runtime. Remove the old integration alias and avoid mixing the original theme package or `window.NativeUI` startup with npm startup.
+- **Native controls are offset:** check page safe-area spacing; the adapter disables automatic scroll-view insets to keep CSS and native coordinates aligned.
+
+Local comparisons covered Ionic 8.8.19 on iOS 27.2 and Android API 35: controls, tabs, overlays, theme integration, dark mode and stop/restart. Search used the theme's Web fallback on both hosts. These checks do not establish native-search parity, complete framework-router transitions or interactive back gestures.
 
 ## Shared source and updates
 
@@ -98,4 +136,4 @@ node scripts/verify-native.mjs ios
 node scripts/verify-native.mjs android
 ```
 
-Native checks install an actual npm archive into a temporary Cordova application and build it. Android uses `gradle` from PATH, or the explicit `NATIVE_UI_GRADLE` executable. The fixture exercises configuration, callbacks, listener disposal, invalid listener requests and a full WebView reload; it reports `NATIVE_UI_SMOKE_OK` when launched. CI builds both real consumers. Shared renderer tests remain upstream; this package tests the adapter boundary and distribution paths.
+Native checks install an actual npm archive into a temporary Cordova application and build it. Android uses `gradle` from PATH, or the explicit `NATIVE_UI_GRADLE` executable. The fixture exercises configuration, callbacks, listener disposal, invalid listener requests and a full WebView reload; it reports `NATIVE_UI_SMOKE_OK` when launched. CI builds both platform consumers; it does not launch the fixture or automate simulator/emulator operations. `npm run test:package` additionally checks theme JS/CSS exports and TypeScript imports from the packed archive, including that the theme and plugin resolve to one integration module without aliases. Shared renderer tests remain upstream; this package tests the adapter boundary and distribution paths.
