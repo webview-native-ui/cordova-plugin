@@ -9,6 +9,21 @@ const upstream = resolve('.upstream');
 const { repository, revision } = JSON.parse(readFileSync('core-source.json', 'utf8'));
 const actual = execFileSync('git', ['-C', upstream, 'rev-parse', 'HEAD'], { encoding: 'utf8' }).trim();
 if (actual !== revision) throw new Error('Core checkout differs from core-source.json; run npm run fetch:core');
+const coreInputs = [
+  'packages/native-ui-core/src',
+  'packages/native-ui-core/android/src/main/java',
+  'packages/native-ui-core/ios/Sources/NativeUICore',
+  'LICENSE',
+];
+const changes = execFileSync(
+  'git',
+  ['-C', upstream, 'status', '--porcelain', '--untracked-files=all', '--ignored=matching', '--', ...coreInputs],
+  { encoding: 'utf8' },
+).trim();
+if (changes)
+  throw new Error(
+    `Core inputs differ from the pinned commit; commit them upstream and update core-source.json, or restore the inputs before building:\n${changes}`,
+  );
 for (const path of ['dist', 'www', 'shared']) rmSync(path, { recursive: true, force: true });
 function compile(root, output) {
   const options = {
