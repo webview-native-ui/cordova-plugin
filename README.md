@@ -22,7 +22,7 @@ Add these preferences to your Cordova application's `config.xml` for Android:
 
 ## Local installation
 
-This initial package has not been published. In this repository, run:
+To build a local distribution archive from this repository, run:
 
 ```sh
 npm ci
@@ -137,3 +137,11 @@ node scripts/verify-native.mjs android
 ```
 
 Native checks install an actual npm archive into a temporary Cordova application and build it. Android uses `gradle` from PATH, or the explicit `NATIVE_UI_GRADLE` executable. The fixture exercises configuration, callbacks, listener disposal, invalid listener requests and a full WebView reload; it reports `NATIVE_UI_SMOKE_OK` when launched. CI builds both platform consumers; it does not launch the fixture or automate simulator/emulator operations. `npm run test:package` additionally checks theme JS/CSS exports and TypeScript imports from the packed archive, including that the theme and plugin resolve to one integration module without aliases. Shared renderer tests remain upstream; this package tests the adapter boundary and distribution paths.
+
+## Releases
+
+`ci.yml` validates pull requests and main (JavaScript/package checks and iOS/Android builds). It does not publish to npm. `release.yml` publishes stable GitHub Releases through npm Trusted Publishing; draft and prerelease releases do not publish.
+
+For the next release, update `package.json`, `package-lock.json` and the root plugin version in `plugin.xml` together. Merge the change and wait for main CI to pass, then create a tag such as `v0.1.1` on that commit and publish its GitHub Release. The workflow requires the tag to match all package versions, rebuilds Core and the theme, runs JavaScript/package checks and publishes the generated archive. Native builds are covered by main CI; the release workflow does not rerun them. Published versions cannot be reused.
+
+The npm Trusted Publisher must specify GitHub organization `webview-native-ui`, repository `cordova-plugin`, and workflow filename `release.yml` (without the directory). Enable direct `npm publish` permission for this workflow. No GitHub environment is configured, so leave the optional environment field empty. Authentication uses `id-token: write`; no npm token secret is needed. Creating the workflow does not publish an existing version automatically.

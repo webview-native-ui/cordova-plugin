@@ -1,0 +1,54 @@
+name: Publish Cordova plugin
+on:
+  release:
+    types: [published]
+permissions:
+  contents: read
+concurrency:
+  group: npm-release
+  cancel-in-progress: false
+jobs:
+  publish:
+    if: ${{ !github.event.release.prerelease }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: ${{ github.event.release.tag_name }}
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          registry-url: https://registry.npmjs.org
+          package-manager-cache: false
+      - name: Check release version
+        env:
+          RELEASE_TAG: ${{ github.event.release.tag_name }}
+        run: |
+          node --input-type=module <<'JS'
+          import assert from 'node:assert/strict';
+          import { readFileSync } from 'node:fs';
+          const pkg = JSON.parse(readFileSync('package.json', 'utf8'));
+          const lock = JSON.parse(readFileSync('package-lock.json', 'utf8'));
+          const xml = readFileSync('plugin.xml', 'utf8');
+          assert.equal(pkg.name, '@webview-native-ui/cordova-plugin');
+          assert.match(pkg.version, /^\d+\.\d+\.\d+$/);
+          assert.equal(process.env.RELEASE_TAG, `v${pkg.version}`);
+          assert.equal(lock.version, pkg.version);
+          assert.equal(lock.packages[''].version, pkg.version);
+          assert.equal(xml.match(/<plugin\b[^>]*\bversion="([^"]+)"/)?.[1], pkg.version);
+          JS
+      - run: npm ci
+      - run: npm run fetch:core
+      - run: npm run build
+      - run: npm run lint
+      - run: npm test
+      - run: npm run test:package
+      - name: Pack release
+        run: npm pack --ignore-scripts --pack-destination "$RUNNER_TEMP"
+      - name: Publish with trusted publishing
+        run: |
+          version=$(node -p "require('./package.json').version")
+          npm publish "$RUNNER_TEMP/webview-native-ui-cordova-plugin-${version}.tgz" --access public
