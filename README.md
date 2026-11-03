@@ -39,7 +39,7 @@ For a bundled application, also install the same archive into the npm project th
 
 ```sh
 # Run in the Web application's npm project; use the archive produced above.
-npm install /absolute/path/to/webview-native-ui-cordova-plugin-0.1.0.tgz
+npm install /absolute/path/to/webview-native-ui-cordova-plugin-0.1.1.tgz
 ```
 
 The npm install makes imports available to your bundler; `cordova plugin add` installs the native plugin. Use the same package version for both. Keep `<script src="cordova.js"></script>` in your Cordova entry HTML, build your Web assets into the application's `www` directory, then run `cordova prepare` and rebuild the native app. Reloading Web assets alone does not update native code.
