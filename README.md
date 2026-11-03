@@ -20,29 +20,25 @@ Add these preferences to your Cordova application's `config.xml` for Android:
 <preference name="AndroidKotlinJVMTarget" value="21" />
 ```
 
-## Local installation
+## Install from npm
 
-To build a local distribution archive from this repository, run:
-
-```sh
-npm ci
-npm run fetch:core
-npm run build
-npm test
-npm run test:package
-npm pack
-```
-
-Extract the archive into a temporary directory, then install its `package` directory with `cordova plugin add /absolute/path/to/package`. This exercises the shipped files without requiring Core's development dependencies. A developer checkout can also be installed with `cordova plugin add /absolute/path/to/cordova-plugin` after the fetch and build steps above. Direct Git URL installation is not supported; install the prepared archive instead.
-
-For a bundled application, also install the same archive into the npm project that builds your Web assets:
+From your Cordova application root:
 
 ```sh
-# Run in the Web application's npm project; use the archive produced above.
-npm install /absolute/path/to/webview-native-ui-cordova-plugin-0.1.1.tgz
+cordova plugin add @webview-native-ui/cordova-plugin@0.1.1
 ```
 
-The npm install makes imports available to your bundler; `cordova plugin add` installs the native plugin. Use the same package version for both. Keep `<script src="cordova.js"></script>` in your Cordova entry HTML, build your Web assets into the application's `www` directory, then run `cordova prepare` and rebuild the native app. Reloading Web assets alone does not update native code.
+This installs the prepared native and JavaScript assets and saves the npm dependency in the Cordova project. You do not need to clone this repository, fetch Core or build the plugin. Direct Git URL installation is not supported because generated assets are not committed.
+
+If your Web bundler uses a separate npm project, install the same version there as well:
+
+```sh
+npm install @webview-native-ui/cordova-plugin@0.1.1
+```
+
+When the Cordova app and bundler share a `package.json`, the dependency saved by `cordova plugin add` is sufficient. Keep `<script src="cordova.js"></script>` in your Cordova entry HTML, build your Web assets into the application's `www` directory, then run `cordova prepare` and rebuild the native app. Reloading Web assets alone does not update native code.
+
+## Start Native UI
 
 Cordova loads `window.NativeUI` from the bundled JavaScript module. Start after `deviceready`:
 
@@ -111,16 +107,40 @@ The theme entry is for bundled applications. Do not mix its npm runtime with a s
 
 Supported Ionic controls can render natively on iOS 26+. Android standard controls keep their Web presentation; app-local Compose extensions are a separate capability. Unsupported controls also retain Web presentation. Styling the page with the theme does not imply every control becomes native.
 
-- **Imports cannot resolve:** install the prepared archive into the Web application's npm project as well as adding the Cordova plugin. Source-only Git installation does not contain generated assets.
+- **Imports cannot resolve:** check that `@webview-native-ui/cordova-plugin` is installed in the npm project that builds your Web assets; a separate Web project needs its own npm install of the same version. Source-only Git installation does not contain generated assets.
 - **Native UI stays in Web mode on supported iOS:** check that `cordova.js` is loaded, startup waits for `deviceready`, and the native app was rebuilt after plugin installation. Inspect `handle.getStatus()`.
 - **Theme helpers do not coordinate with native controls:** use `/theme` for all theme imports and start only one runtime. Remove the old integration alias and avoid mixing the original theme package or `window.NativeUI` startup with npm startup.
 - **Native controls are offset:** check page safe-area spacing; the adapter disables automatic scroll-view insets to keep CSS and native coordinates aligned.
 
 Local comparisons covered Ionic 8.8.19 on iOS 27.2 and Android API 35: controls, tabs, overlays, theme integration, dark mode and stop/restart. Search used the theme's Web fallback on both hosts. These checks do not establish native-search parity, complete framework-router transitions or interactive back gestures.
 
+## Local development and archive verification
+
+To build a local distribution archive from this repository, run:
+
+```sh
+npm ci
+npm run fetch:core
+npm run build
+npm test
+npm run test:package
+npm pack
+```
+
+Extract the archive into a temporary directory, then install its `package` directory with `cordova plugin add /absolute/path/to/package`. This exercises the shipped files without requiring Core's development dependencies. A developer checkout can also be installed with `cordova plugin add /absolute/path/to/cordova-plugin` after the fetch and build steps above. Direct Git URL installation is not supported; install the prepared archive instead.
+
+For a bundled application, also install the same archive into the npm project that builds your Web assets:
+
+```sh
+# Run in the Web application's npm project; use the archive produced above.
+npm install /absolute/path/to/webview-native-ui-cordova-plugin-0.1.1.tgz
+```
+
+Use the same archive for the Cordova plugin and Web bundler so their versions match.
+
 ## Shared source and updates
 
-The initial version deliberately uses generated copies. The Core repository and commit are pinned in `core-source.json`. CI runs `npm run fetch:core` to clone that commit into `.upstream/`, then `npm run build` compiles its TypeScript and copies its Swift/Kotlin unchanged into `shared/`. The prepared npm archive is uploaded as the `cordova-native-ui` CI artifact. Capacitor is not a runtime dependency, and consumers do not clone or build Core. `shared/ORIGIN.json` records the Core commit and theme package version. The theme JS, declarations and CSS are copied from its pinned npm build, with only integration imports redirected to the local Core. Its license is included. Only `src/` contains Cordova-owned implementation. Do not edit generated `shared/`, `dist/` or `www/` files.
+The initial version deliberately uses generated copies. The Core repository and commit are pinned in `core-source.json`. CI runs `npm run fetch:core` to clone that commit into `.upstream/`, then `npm run build` compiles its TypeScript and copies its Swift/Kotlin unchanged into `shared/`. The prepared npm archive is uploaded as the `cordova-native-ui` CI artifact. Capacitor is not a runtime dependency, and consumers do not clone or build Core. `shared/ORIGIN.json` records the Core commit and theme package version. The theme JS, declarations and CSS are copied from its pinned npm build, with only integration imports redirected to the local Core. Its license is included. Only `src/` contains Cordova-owned implementation. Do not edit generated `shared/`, `dist/` or `www/` files. Builds reject local modifications or extra files in the copied Core source directories and upstream LICENSE, including ignored files. Commit Core changes upstream and update the pinned SHA before distributing them. Changes outside those inputs, such as generated upstream documentation, do not block the build.
 
 Directly depending on the Capacitor repository's Core SPM product conflicts with cordova-ios because its dependency graph also contains capacitor-swift-pm's `Cordova` target. The local Core target avoids that graph collision while preserving one upstream editing source. This repository is installed through Cordova, not directly as a GitHub Swift Package: its shared Swift assets are generated by the build.
 
