@@ -1,11 +1,12 @@
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
-import { mkdtempSync, readFileSync, rmSync, existsSync, readdirSync, mkdirSync, symlinkSync } from 'node:fs';
+import { mkdtempSync, writeFileSync, readFileSync, rmSync, existsSync, readdirSync, mkdirSync, symlinkSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, dirname, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import vm from 'node:vm';
 import ts from 'typescript';
+import { build } from 'esbuild';
 import { actions } from '../dist/transport.js';
 const temporary = mkdtempSync(join(tmpdir(), 'cordova-native-ui-package-'));
 try {
@@ -16,6 +17,7 @@ try {
   const root = join(temporary, 'package');
   const manifest = JSON.parse(readFileSync(join(root, 'package.json'), 'utf8'));
   assert(!manifest.dependencies['@rdlabo/capacitor-native-ui']);
+  assert(!manifest.dependencies['@rdlabo/ionic-theme-ios27']);
   const xml = readFileSync(join(root, 'plugin.xml'), 'utf8');
   assert(xml.includes(`id="${manifest.cordova.id}"`));
   assert(xml.includes(`version="${manifest.version}"`));
@@ -35,7 +37,10 @@ try {
   for (const [, path] of xml.matchAll(/<(?:source-file|js-module|framework)\b[^>]*\bsrc="([^"]+)"/g)) {
     assert(existsSync(join(root, path)), `Missing plugin resource ${path}`);
   }
-  for (const entry of Object.values(manifest.exports)) for (const path of Object.values(entry)) assert(existsSync(join(root, path)), path);
+  for (const entry of Object.values(manifest.exports)) {
+    const paths = typeof entry === 'string' ? [entry] : Object.values(entry);
+    for (const path of paths) assert(existsSync(join(root, path.split('*')[0])), path);
+  }
   function verifyTree(expected, actual) {
     const entries = readdirSync(expected, { withFileTypes: true });
     assert.deepEqual(readdirSync(actual).sort(), entries.map((entry) => entry.name).sort());
@@ -70,6 +75,63 @@ try {
     ],
     { stdio: 'inherit' },
   );
+  // Resolve the public package entries from the packed archive with no aliases.
+  const ionicPeer = join(root, 'node_modules/@ionic/core');
+  mkdirSync(dirname(ionicPeer), { recursive: true });
+  symlinkSync(resolve('node_modules/@ionic/core'), ionicPeer, 'dir');
+  const consumer = join(temporary, 'consumer');
+  mkdirSync(join(consumer, 'node_modules/@webview-ui-native'), { recursive: true });
+  symlinkSync(root, join(consumer, 'node_modules', manifest.name), 'dir');
+  const themeBuild = await build({
+    stdin: {
+      contents: `
+        import { enableNativeUI } from '${manifest.name}';
+        import { iosTransitionAnimation, attachTabBarSearchable } from '${manifest.name}/theme';
+        import '${manifest.name}/theme/css/ionic-theme-ios27.css';
+        globalThis.packageSmoke = { enableNativeUI, iosTransitionAnimation, attachTabBarSearchable };
+      `,
+      resolveDir: consumer,
+      loader: 'ts',
+    },
+    bundle: true,
+    platform: 'browser',
+    format: 'esm',
+    write: false,
+    outdir: join(temporary, 'bundle'),
+    metafile: true,
+    logLevel: 'silent',
+  });
+  const integrations = Object.keys(themeBuild.metafile.inputs).filter((path) => path.endsWith('native-integration/index.js'));
+  assert.equal(integrations.length, 1, 'Packed theme and Cordova must share exactly one integration module');
+  assert(
+    !Object.keys(themeBuild.metafile.inputs).some((path) =>
+      /node_modules\/(?:@capacitor|@rdlabo\/(?:capacitor-native-ui|ionic-theme-ios27))\//.test(path),
+    ),
+  );
+  const declaration = join(consumer, 'consumer.ts');
+  writeFileSync(
+    declaration,
+    `import { enableNativeUI } from '${manifest.name}';\nimport { iosTransitionAnimation, attachTabBarSearchable } from '${manifest.name}/theme';\nvoid [enableNativeUI, iosTransitionAnimation, attachTabBarSearchable];\n`,
+  );
+  const program = ts.createProgram([declaration], {
+    noEmit: true,
+    skipLibCheck: true,
+    strict: true,
+    target: ts.ScriptTarget.ES2022,
+    module: ts.ModuleKind.ESNext,
+    moduleResolution: ts.ModuleResolutionKind.Bundler,
+  });
+  const errors = ts.getPreEmitDiagnostics(program);
+  assert.equal(
+    errors.length,
+    0,
+    ts.formatDiagnosticsWithColorAndContext(errors, {
+      getCanonicalFileName: (x) => x,
+      getCurrentDirectory: () => consumer,
+      getNewLine: () => '\n',
+    }),
+  );
+  assert(existsSync(join(root, 'shared/theme/LICENSE')));
   const module = { exports: {} };
   vm.runInNewContext(readFileSync(join(root, 'www/native-ui.js'), 'utf8'), {
     module,
@@ -82,6 +144,7 @@ try {
   assert.equal(typeof module.exports.defineNativeUI, 'function');
   const origin = JSON.parse(readFileSync(join(root, 'shared/ORIGIN.json'), 'utf8'));
   assert.equal(origin.revision, JSON.parse(readFileSync('core-source.json', 'utf8')).revision);
+  assert.equal(origin.theme.version, manifest.devDependencies['@rdlabo/ionic-theme-ios27']);
   console.log('Cordova archive resources, bundled API, Core provenance and native sources verified.');
 } finally {
   rmSync(temporary, { recursive: true, force: true });

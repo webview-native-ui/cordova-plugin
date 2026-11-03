@@ -1,5 +1,5 @@
 {
-  "name": "@rdlabo/cordova-native-ui",
+  "name": "@webview-ui-native/cordova-plugin",
   "version": "0.1.0",
   "description": "Cordova adapter for WebView Native UI Core",
   "type": "module",
@@ -45,7 +45,12 @@
     "./vertical-bars": {
       "types": "./dist/vertical-bars.d.ts",
       "import": "./dist/vertical-bars.js"
-    }
+    },
+    "./theme": {
+      "types": "./shared/theme/index.d.ts",
+      "import": "./shared/theme/index.js"
+    },
+    "./theme/css/*": "./shared/theme/css/*"
   },
   "scripts": {
     "build": "node scripts/build.mjs",
@@ -57,7 +62,9 @@
   },
   "dependencies": {
     "@webview-native-ui/engine": "^1.0.0",
-    "@rdlabo/ionic-theme-utils": "0.1.5"
+    "@rdlabo/ionic-theme-utils": "0.1.5",
+    "@stencil/core": "^4.43.5",
+    "ionicons": "^8.1.0"
   },
   "peerDependencies": {
     "@ionic/core": ">=8.8.1 <10"
@@ -75,6 +82,7 @@
     "typescript": "^5.9.3",
     "esbuild": "0.28.1",
     "vitest": "^4.0.0",
-    "prettier": "^3.6.2"
+    "prettier": "^3.6.2",
+    "@rdlabo/ionic-theme-ios27": "2.1.0"
   }
 }

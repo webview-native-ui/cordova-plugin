@@ -5,6 +5,7 @@ import WebKit
 @objc(CDVNativeUI)
 public final class CordovaNativeUIPlugin: CDVPlugin {
     private var renderer: NativeUIController?
+    private var originalInsetBehavior: UIScrollView.ContentInsetAdjustmentBehavior?
     private var listeners: [String: (event: String, callback: String)] = [:]
     private let events: Set<String> = ["activate", "search", "webViewMetricsChange", "overlay", "snapshotInteraction"]
 
@@ -24,7 +25,15 @@ public final class CordovaNativeUIPlugin: CDVPlugin {
         renderer.load()
         return renderer
     }
-    public override func pluginInitialize() { _ = core() }
+    public override func pluginInitialize() {
+        // Core projects CSS viewport coordinates into the full WKWebView bounds,
+        // matching Capacitor's default. Automatic safe-area insets distort that mapping.
+        if let webView = webView as? WKWebView {
+            originalInsetBehavior = webView.scrollView.contentInsetAdjustmentBehavior
+            webView.scrollView.contentInsetAdjustmentBehavior = .never
+        }
+        _ = core()
+    }
     private func emit(_ event: String, data: [String: Any]) {
         for listener in listeners.values where listener.event == event {
             let result = CDVPluginResult(status: CDVCommandStatus_OK, messageAs: ["type": "event", "data": data])
@@ -67,7 +76,13 @@ public final class CordovaNativeUIPlugin: CDVPlugin {
         previous.clear(NativeUICall(options: ["revision": Int.max], resolve: { _ in _ = previous }, reject: { _ in }))
     }
     public override func onReset() { reset(); super.onReset() }
-    public override func dispose() { reset(); super.dispose() }
+    public override func dispose() {
+        reset()
+        if let originalInsetBehavior, let webView = webView as? WKWebView {
+            webView.scrollView.contentInsetAdjustmentBehavior = originalInsetBehavior
+        }
+        super.dispose()
+    }
     @objc public func configure(_ command: CDVInvokedUrlCommand) { core().configure(request(command)) }
     @objc public func coveredSnapshot(_ command: CDVInvokedUrlCommand) { core().coveredSnapshot(request(command)) }
     @objc public func completeExtensionAction(_ command: CDVInvokedUrlCommand) { core().completeExtensionAction(request(command)) }
