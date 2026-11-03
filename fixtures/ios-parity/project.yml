@@ -1,0 +1,23 @@
+name: NativeUIParityTests
+options:
+  deploymentTarget:
+    iOS: '26.0'
+targets:
+  NativeUIParityTests:
+    type: bundle.ui-testing
+    platform: iOS
+    sources:
+      - NativeUIParityTests.swift
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: dev.rdlabo.nativeui.parity.tests
+        GENERATE_INFOPLIST_FILE: YES
+        SWIFT_VERSION: '5.0'
+schemes:
+  NativeUIParityTests:
+    build:
+      targets:
+        NativeUIParityTests: [test]
+    test:
+      targets:
+        - NativeUIParityTests

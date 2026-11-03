@@ -1,0 +1,23 @@
+@import '@ionic/core/css/core.css';
+@import '@ionic/core/css/normalize.css';
+@import '@ionic/core/css/structure.css';
+@import '@ionic/core/css/typography.css';
+@import '@ionic/core/css/palettes/dark.class.css';
+@import '@rdlabo/ionic-theme-ios27/dist/css/default-variables.css';
+@import '@rdlabo/ionic-theme-ios27/dist/css/ionic-theme-ios27.css';
+@import '@rdlabo/ionic-theme-ios27/dist/css/ionic-theme-ios27-dark-class.css';
+.actions {
+  padding: 12px 20px;
+}
+.actions p {
+  margin: 8px 0;
+}
+ion-popover {
+  --width: 280px;
+  --height: 240px;
+}
+parity-overlay {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
