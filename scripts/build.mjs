@@ -4,6 +4,7 @@ import { resolve, join } from 'node:path';
 import ts from 'typescript';
 import { build } from 'esbuild';
 import { copyTheme } from './lib/copy-theme.mjs';
+import { copyDynamicColors } from './lib/copy-dynamic-colors.mjs';
 
 const upstream = resolve('.upstream');
 const { repository, revision } = JSON.parse(readFileSync('core-source.json', 'utf8'));
@@ -13,6 +14,8 @@ const coreInputs = [
   'packages/native-ui-core/src',
   'packages/native-ui-core/android/src/main/java',
   'packages/native-ui-core/ios/Sources/NativeUICore',
+  'src/dynamic-colors.ts',
+  'android/src/main/java/dev/rdlabo/capacitor/nativeui/DynamicColorScheme.kt',
   'LICENSE',
 ];
 const changes = execFileSync(
@@ -55,6 +58,7 @@ compile(join(upstream, 'packages/native-ui-core/src'), 'shared/core');
 cpSync(join(upstream, 'packages/native-ui-core/android/src/main/java'), 'shared/android', { recursive: true });
 cpSync(join(upstream, 'packages/native-ui-core/ios/Sources/NativeUICore'), 'shared/ios', { recursive: true });
 cpSync(join(upstream, 'LICENSE'), 'shared/LICENSE');
+copyDynamicColors(upstream);
 const theme = copyTheme();
 writeFileSync('shared/ORIGIN.json', JSON.stringify({ repository, revision, theme }, null, 2) + '\n');
 compile('src', 'dist');

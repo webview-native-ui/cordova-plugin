@@ -1,5 +1,6 @@
 import type { NativeUIPlugin } from '../shared/core/native/definitions.js';
 import type { PluginListenerHandle } from '../shared/core/host.js';
+import type { DynamicColorPlugin } from '../shared/dynamic-colors.js';
 
 export interface CordovaBridge {
   platformId: string;
@@ -25,7 +26,7 @@ const asError = (error: unknown): Error =>
   error instanceof Error ? error : new Error(typeof error === 'string' ? error : JSON.stringify(error));
 
 /** Cordova callbacks are the only host-specific part of the JavaScript transport. */
-export function createTransport(getBridge: () => CordovaBridge | undefined): NativeUIPlugin {
+export function createTransport(getBridge: () => CordovaBridge | undefined): NativeUIPlugin & DynamicColorPlugin {
   let nextListener = 0;
   function invoke(action: string, options: unknown = {}): Promise<any> {
     return new Promise((resolve, reject) => {
@@ -63,6 +64,7 @@ export function createTransport(getBridge: () => CordovaBridge | undefined): Nat
   }
   return {
     ...Object.fromEntries(actions.map((action) => [action, (options?: unknown) => invoke(action, options)])),
+    getDynamicColorScheme: () => invoke('getDynamicColorScheme'),
     addListener,
-  } as NativeUIPlugin;
+  } as NativeUIPlugin & DynamicColorPlugin;
 }

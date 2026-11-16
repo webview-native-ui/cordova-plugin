@@ -18,6 +18,12 @@ try {
   const manifest = JSON.parse(readFileSync(join(root, 'package.json'), 'utf8'));
   assert(!manifest.dependencies['@rdlabo/capacitor-native-ui']);
   assert(!manifest.dependencies['@rdlabo/ionic-theme-ios27']);
+  const engine = JSON.parse(readFileSync('.upstream/packages/native-ui-core/package.json', 'utf8')).dependencies[
+    '@webview-native-ui/engine'
+  ];
+  assert.equal(manifest.dependencies['@webview-native-ui/engine'], engine);
+  assert(readFileSync(join(root, 'Package.swift'), 'utf8').includes(`exact: "${engine}"`));
+  assert(readFileSync(join(root, 'src/android/native-ui.gradle'), 'utf8').includes(`engine:${engine}'`));
   const xml = readFileSync(join(root, 'plugin.xml'), 'utf8');
   assert(xml.includes(`id="${manifest.cordova.id}"`));
   assert(xml.includes(`version="${manifest.version}"`));
@@ -53,6 +59,13 @@ try {
   }
   verifyTree('.upstream/packages/native-ui-core/android/src/main/java', join(root, 'shared/android'));
   verifyTree('.upstream/packages/native-ui-core/ios/Sources/NativeUICore', join(root, 'shared/ios'));
+  assert.equal(
+    readFileSync(join(root, 'shared/android-adapter/DynamicColorScheme.kt'), 'utf8'),
+    readFileSync('.upstream/android/src/main/java/dev/rdlabo/capacitor/nativeui/DynamicColorScheme.kt', 'utf8')
+      .replace('import com.getcapacitor.JSObject', 'import org.json.JSONObject')
+      .replaceAll('JSObject', 'JSONObject'),
+    'Android palette extraction must match the pinned upstream implementation',
+  );
   for (const name of Object.keys(manifest.dependencies)) {
     const target = join(root, 'node_modules', name);
     mkdirSync(dirname(target), { recursive: true });
@@ -68,6 +81,7 @@ try {
     const api = await import(${JSON.stringify(pathToFileURL(join(root, 'dist/core.js')).href)});
     const handle = await api.enableNativeUI({ controls: false });
     assert.equal(handle.getStatus().state, 'web');
+    assert.deepEqual(await api.getDynamicColorScheme(), { available: false, systemDark: false });
     await handle.destroy();
     const ionic = await import(${JSON.stringify(pathToFileURL(join(root, 'dist/index.js')).href)});
     assert.equal(typeof ionic.enableNativeUI, 'function');
@@ -142,6 +156,8 @@ try {
   });
   assert.equal(typeof module.exports.enableNativeUI, 'function');
   assert.equal(typeof module.exports.defineNativeUI, 'function');
+  assert.equal(typeof module.exports.getDynamicColorScheme, 'function');
+  assert.equal(typeof module.exports.addDynamicColorListener, 'function');
   const origin = JSON.parse(readFileSync(join(root, 'shared/ORIGIN.json'), 'utf8'));
   assert.equal(origin.revision, JSON.parse(readFileSync('core-source.json', 'utf8')).revision);
   assert.equal(origin.theme.version, manifest.devDependencies['@rdlabo/ionic-theme-ios27']);

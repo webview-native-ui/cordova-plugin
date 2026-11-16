@@ -1,6 +1,6 @@
 {
   "name": "@webview-native-ui/cordova-plugin",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Cordova adapter for WebView Native UI Core",
   "type": "module",
   "license": "MIT",
@@ -61,7 +61,7 @@
     "fetch:core": "node scripts/fetch-core.mjs"
   },
   "dependencies": {
-    "@webview-native-ui/engine": "^1.0.0",
+    "@webview-native-ui/engine": "1.0.9",
     "@rdlabo/ionic-theme-utils": "0.1.5",
     "@stencil/core": "^4.43.5",
     "ionicons": "^8.1.0"

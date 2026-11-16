@@ -4,10 +4,34 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Native UI acceptance</title>
+    <style>
+      body {
+        padding: 140px 24px 24px;
+        min-height: 3000px;
+        font: 16px system-ui;
+      }
+      #actions {
+        position: fixed;
+        top: 64px;
+        left: 24px;
+        right: 24px;
+        background: white;
+        z-index: 1;
+      }
+      pre {
+        white-space: pre-wrap;
+        overflow-wrap: anywhere;
+      }
+    </style>
   </head>
   <body>
+    <div id="actions">
+      <button id="native-action" data-native-ui="button">Native action</button><span id="native-count">Native taps:0</span
+      ><span id="color-events">Color events:0</span>
+    </div>
     <h1>Cordova Native UI acceptance</h1>
     <pre id="result">Waiting for deviceready</pre>
+    <pre id="motion"></pre>
     <script src="cordova.js"></script>
     <script src="smoke.js"></script>
   </body>

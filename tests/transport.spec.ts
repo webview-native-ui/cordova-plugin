@@ -9,14 +9,28 @@ function fixture() {
 describe('Cordova transport', () => {
   it('sends typed options to the NativeUI service and preserves native results/errors', async () => {
     const { exec, plugin } = fixture();
-    const pending = plugin.configure({ suppressScrollEdgeEffect: true });
+    const pending = plugin.configure({ suppressScrollEdgeEffect: true, stopScrollOnActivate: false });
     const [success, , service, action, args] = exec.mock.calls[0];
-    expect([service, action, args]).toEqual(['NativeUI', 'configure', [{ suppressScrollEdgeEffect: true }]]);
+    expect([service, action, args]).toEqual(['NativeUI', 'configure', [{ suppressScrollEdgeEffect: true, stopScrollOnActivate: false }]]);
     success({ supported: true, extensions: ['fixture'] });
     await expect(pending).resolves.toEqual({ supported: true, extensions: ['fixture'] });
     const failed = plugin.getWebViewMetrics();
     exec.mock.calls[1][1]('native failure');
     await expect(failed).rejects.toThrow('native failure');
+  });
+  it('uses Cordova callbacks for Dynamic Color reads and change subscriptions', async () => {
+    const { exec, plugin } = fixture();
+    const pending = plugin.getDynamicColorScheme();
+    expect(exec.mock.calls[0].slice(2)).toEqual(['NativeUI', 'getDynamicColorScheme', [{}]]);
+    exec.mock.calls[0][0]({ available: false, systemDark: false });
+    await expect(pending).resolves.toEqual({ available: false, systemDark: false });
+    const listener = vi.fn();
+    const registered = plugin.addListener('dynamicColorSchemeChange', listener);
+    expect(exec.mock.calls[1][4]).toEqual([{ id: '1', eventName: 'dynamicColorSchemeChange' }]);
+    exec.mock.calls[1][0]({ type: 'ready' });
+    await registered;
+    exec.mock.calls[1][0]({ type: 'event', data: {} });
+    expect(listener).toHaveBeenCalledWith({});
   });
   it('waits for listener registration and releases a kept callback once', async () => {
     const { exec, plugin } = fixture();
