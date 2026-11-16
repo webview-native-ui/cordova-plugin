@@ -1,6 +1,6 @@
 {
   "name": "@webview-native-ui/cordova-plugin",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "Cordova adapter for WebView Native UI Core",
   "type": "module",
   "license": "MIT",
