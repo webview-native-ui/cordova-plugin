@@ -1,6 +1,8 @@
 package dev.rdlabo.cordova.nativeui
 
 import android.webkit.WebView
+import android.content.res.Configuration
+import dev.rdlabo.capacitor.nativeui.DynamicColorScheme
 import dev.rdlabo.capacitor.nativeui.NativeUICall
 import dev.rdlabo.capacitor.nativeui.NativeUIController
 import org.apache.cordova.CallbackContext
@@ -12,7 +14,13 @@ import org.json.JSONObject
 class NativeUIPlugin : CordovaPlugin() {
     private var renderer: NativeUIController? = null
     private val listeners = linkedMapOf<String, Pair<String, CallbackContext>>()
-    private val events = setOf("activate", "search", "webViewMetricsChange", "overlay", "snapshotInteraction")
+    private val events = setOf("activate", "search", "webViewMetricsChange", "overlay", "snapshotInteraction", "dynamicColorSchemeChange")
+    private fun dynamicColorsChanged() {
+        listeners.values.filter { it.first == "dynamicColorSchemeChange" }.forEach { (_, callback) ->
+            callback.sendPluginResult(PluginResult(PluginResult.Status.OK,
+                JSONObject().put("type", "event").put("data", JSONObject())).apply { keepCallback = true })
+        }
+    }
     private fun core(): NativeUIController = renderer ?: NativeUIController(
         cordova.activity, webView.view as WebView,
         { event, data ->
@@ -26,12 +34,13 @@ class NativeUIPlugin : CordovaPlugin() {
     override fun pluginInitialize() { cordova.activity.runOnUiThread { core() } }
     override fun execute(action: String, args: JSONArray, callback: CallbackContext): Boolean {
         val options = args.optJSONObject(0) ?: JSONObject()
-        val supported = setOf("configure", "getWebViewMetrics", "update", "clear", "coveredSnapshot", "completeExtensionAction", "addListener", "removeListener")
+        val supported = setOf("configure", "getWebViewMetrics", "update", "clear", "coveredSnapshot", "completeExtensionAction", "addListener", "removeListener", "getDynamicColorScheme")
         if (action !in supported) return false
         cordova.activity.runOnUiThread {
             try {
                 val call = NativeUICall(options, { callback.success(it) }, { message, _ -> callback.error(message) })
                 when (action) {
+                    "getDynamicColorScheme" -> callback.success(DynamicColorScheme.read(cordova.activity.applicationContext))
                     "addListener" -> {
                         val id = options.getString("id"); val event = options.getString("eventName")
                         require(event in events && id !in listeners) { "Invalid or duplicate listener" }
@@ -61,6 +70,10 @@ class NativeUIPlugin : CordovaPlugin() {
     }
     override fun onReset() { cordova.activity.runOnUiThread { reset() } }
     override fun onDestroy() { cordova.activity.runOnUiThread { reset() } }
-    override fun onPause(multitasking: Boolean) { renderer?.pause() }
-    override fun onResume(multitasking: Boolean) { renderer?.resume() }
+    override fun onPause(multitasking: Boolean) { renderer?.pause(); super.onPause(multitasking) }
+    override fun onResume(multitasking: Boolean) { renderer?.resume(); dynamicColorsChanged(); super.onResume(multitasking) }
+    override fun onConfigurationChanged(newConfig: Configuration) {
+        dynamicColorsChanged()
+        super.onConfigurationChanged(newConfig)
+    }
 }

@@ -20,6 +20,7 @@
       <feature name="NativeUI"><param name="android-package" value="dev.rdlabo.cordova.nativeui.NativeUIPlugin" /><param name="onload" value="true" /></feature>
     </config-file>
     <source-file src="src/android/NativeUIPlugin.kt" target-dir="app/src/main/java/dev/rdlabo/cordova/nativeui" />
+    <source-file src="shared/android-adapter/DynamicColorScheme.kt" target-dir="app/src/main/java/dev/rdlabo/capacitor/nativeui" />
     <source-file src="shared/android/dev/rdlabo/nativeui/core/NativeUI.kt" target-dir="app/src/main/java/dev/rdlabo/capacitor/nativeui" />
     <source-file src="shared/android/dev/rdlabo/nativeui/core/NativeUICall.kt" target-dir="app/src/main/java/dev/rdlabo/capacitor/nativeui" />
     <source-file src="shared/android/dev/rdlabo/nativeui/core/NativeUIController.kt" target-dir="app/src/main/java/dev/rdlabo/capacitor/nativeui" />

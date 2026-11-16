@@ -2,6 +2,8 @@
 
 Thin Cordova adapter for the shared Native UI implementation in [capacitor-plugin](https://github.com/webview-native-ui/capacitor-plugin). Capacitor remains the primary implementation. This package adds Cordova callbacks, event subscriptions, installation metadata and lifecycle cleanup; it does not fork the renderers.
 
+The shared implementation is pinned to Capacitor plugin **2.1.7**, with Engine **1.0.8** fixed across JavaScript, SwiftPM and Android Maven. This includes the current layout handling, iOS momentum cancellation and snapshot acquisition order.
+
 ## Requirements
 
 - Cordova CLI 13, cordova-ios 8.1+ with Swift Package Manager, or cordova-android 15+.
@@ -53,10 +55,30 @@ Bundled applications can import `enableNativeUI` from `@webview-native-ui/cordov
 
 App-local Swift renderers use `import CordovaNativeUI` and `NativeUI.register(...)`. Android renderers retain the shared `dev.rdlabo.capacitor.nativeui.NativeUI` namespace for compatibility; this name does not imply an Android Capacitor SDK dependency. See the [shared extension documentation](https://github.com/webview-native-ui/capacitor-plugin/blob/main/docs/native-ui-extensions.md) for renderer contracts.
 
+On iOS, native activation stops WebView momentum by default. Pass `stopScrollOnActivate: false` to `enableNativeUI()` to preserve momentum. A new gesture resumes scrolling normally; no explicit resume call is needed.
+
 On iOS, the adapter uses the same full-WebView coordinate space as Capacitor
 (`contentInsetAdjustmentBehavior = .never`). Apply safe-area spacing in your page
 CSS, for example with `env(safe-area-inset-top)`, rather than relying on automatic
 scroll-view insets.
+
+## Android Dynamic Color
+
+The root and `/core` entries expose `getDynamicColorScheme()`, `addDynamicColorListener()` and `materialColorRoles`, matching the Capacitor API. Android 12+ supplies light/dark Material color schemes; older Android, iOS and Web return `available: false` with the current system appearance. This API is independent of Native UI projection.
+
+```ts
+import { getDynamicColorScheme, addDynamicColorListener } from '@webview-native-ui/cordova-plugin/core';
+
+const colors = await getDynamicColorScheme();
+const subscription = await addDynamicColorListener(async () => {
+  const updated = await getDynamicColorScheme();
+  // Apply the available scheme to your application's theme.
+});
+// When the consumer is destroyed:
+await subscription.remove();
+```
+
+Android resume and configuration changes trigger the listener. No wallpaper or storage permissions are needed. Color extraction and role definitions are generated from the same pinned Capacitor source; the Cordova adapter only changes transport and lifecycle wiring.
 
 ## Ionic iOS27 theme integration
 
