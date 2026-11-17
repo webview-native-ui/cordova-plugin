@@ -2,7 +2,7 @@
 
 Thin Cordova adapter for the shared Native UI implementation in [capacitor-plugin](https://github.com/webview-native-ui/capacitor-plugin). Capacitor remains the primary implementation. This package adds Cordova callbacks, event subscriptions, installation metadata and lifecycle cleanup; it does not fork the renderers.
 
-The shared implementation is pinned to Capacitor plugin **2.1.7**, with Engine **1.0.8** fixed across JavaScript, SwiftPM and Android Maven. This includes the current layout handling, iOS momentum cancellation and snapshot acquisition order.
+The shared implementation is pinned to the merged toolbar-badge Core commit included in Capacitor plugin **2.1.10**, with Engine **1.0.10** fixed across JavaScript, SwiftPM and Android Maven. This includes native and Web rail toolbar badges, current layout handling, iOS momentum cancellation and snapshot acquisition order. The exact Core commit is recorded in `core-source.json` and the packaged `shared/ORIGIN.json`.
 
 ## Requirements
 
@@ -203,6 +203,6 @@ Native checks install an actual npm archive into a temporary Cordova application
 
 `ci.yml` validates pull requests and main (JavaScript/package checks and iOS/Android builds). It does not publish to npm. `release.yml` publishes stable GitHub Releases through npm Trusted Publishing; draft and prerelease releases do not publish.
 
-For the next release, update `package.json`, `package-lock.json` and the root plugin version in `plugin.xml` together. Merge the change and wait for main CI to pass, then create a tag such as `v0.1.1` on that commit and publish its GitHub Release. The workflow requires the tag to match all package versions, rebuilds Core and the theme, runs JavaScript/package checks and publishes the generated archive. Native builds are covered by main CI; the release workflow does not rerun them. Published versions cannot be reused.
+For the next release, update `package.json`, `package-lock.json` and the root plugin version in `plugin.xml` together. Merge the change and wait for main CI to pass, then create a tag such as `v0.1.4` on that commit and publish its GitHub Release. The workflow requires the tag to match all package versions, rebuilds Core and the theme, runs JavaScript/package checks and publishes the generated archive. Native builds are covered by main CI; the release workflow does not rerun them. Published versions cannot be reused.
 
 The npm Trusted Publisher must specify GitHub organization `webview-native-ui`, repository `cordova-plugin`, and workflow filename `release.yml` (without the directory). Enable direct `npm publish` permission for this workflow. No GitHub environment is configured, so leave the optional environment field empty. Authentication uses `id-token: write`; no npm token secret is needed. Creating the workflow does not publish an existing version automatically.
