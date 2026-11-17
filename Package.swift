@@ -6,7 +6,7 @@ let package = Package(
     products: [.library(name: "cordova-plugin-native-ui", targets: ["CordovaNativeUI"])],
     dependencies: [
         .package(url: "https://github.com/apache/cordova-ios.git", branch: "master"),
-        .package(url: "https://github.com/webview-native-ui/engine.git", exact: "1.0.10")
+        .package(url: "https://github.com/webview-native-ui/engine.git", exact: "1.0.11")
     ],
     targets: [
         .target(name: "NativeUICore", dependencies: [

@@ -2,7 +2,7 @@
 
 Thin Cordova adapter for the shared Native UI implementation in [capacitor-plugin](https://github.com/webview-native-ui/capacitor-plugin). Capacitor remains the primary implementation. This package adds Cordova callbacks, event subscriptions, installation metadata and lifecycle cleanup; it does not fork the renderers.
 
-The shared implementation is pinned to the merged toolbar-badge Core commit included in Capacitor plugin **2.1.10**, with Engine **1.0.10** fixed across JavaScript, SwiftPM and Android Maven. This includes native and Web rail toolbar badges, current layout handling, iOS momentum cancellation and snapshot acquisition order. The exact Core commit is recorded in `core-source.json` and the packaged `shared/ORIGIN.json`.
+The shared implementation is pinned to the Core commit included in Capacitor plugin **2.1.11**, with Engine **1.0.11** fixed across JavaScript, SwiftPM and Android Maven. This includes native and Web rail toolbar badges, current layout handling, iOS momentum cancellation and snapshot acquisition order. The exact Core commit is recorded in `core-source.json` and the packaged `shared/ORIGIN.json`.
 
 ## Requirements
 
@@ -27,7 +27,7 @@ Add these preferences to your Cordova application's `config.xml` for Android:
 From your Cordova application root:
 
 ```sh
-cordova plugin add @webview-native-ui/cordova-plugin@0.1.4
+cordova plugin add @webview-native-ui/cordova-plugin@0.1.5
 ```
 
 This installs the prepared native and JavaScript assets and saves the npm dependency in the Cordova project. You do not need to clone this repository, fetch Core or build the plugin. Direct Git URL installation is not supported because generated assets are not committed.
@@ -35,7 +35,7 @@ This installs the prepared native and JavaScript assets and saves the npm depend
 If your Web bundler uses a separate npm project, install the same version there as well:
 
 ```sh
-npm install @webview-native-ui/cordova-plugin@0.1.4
+npm install @webview-native-ui/cordova-plugin@0.1.5
 ```
 
 When the Cordova app and bundler share a `package.json`, the dependency saved by `cordova plugin add` is sufficient. Keep `<script src="cordova.js"></script>` in your Cordova entry HTML, build your Web assets into the application's `www` directory, then run `cordova prepare` and rebuild the native app. Reloading Web assets alone does not update native code.
@@ -144,6 +144,12 @@ On supported iOS native Vertical Bars, badges retain their text or empty unread 
 
 Update both the Cordova project plugin and the Web project's npm dependency, run `cordova prepare`, and rebuild the native app. Loading new Web assets alone does not update the native renderer. The bundled theme is 2.2.0; installing a separate theme does not update the copy shipped here.
 
+## Modal snapshot fix
+
+Version 0.1.5 includes Engine 1.0.11, which fixes modal rail button images turning opaque gray on iOS. Transparent modal captures retain their original Glass filtering; composited window captures keep the cold-launch workaround. No theme update or markup change is required.
+
+Update both the Cordova project plugin and the Web project's npm dependency to 0.1.5, run `cordova prepare`, and rebuild the native app. Web asset reloads alone do not update the native capture implementation.
+
 ## Behavior and troubleshooting
 
 Supported Ionic controls can render natively on iOS 26+. Android standard controls keep their Web presentation; app-local Compose extensions are a separate capability. Unsupported controls also retain Web presentation. Styling the page with the theme does not imply every control becomes native.
@@ -174,7 +180,7 @@ For a bundled application, also install the same archive into the npm project th
 
 ```sh
 # Run in the Web application's npm project; use the archive produced above.
-npm install /absolute/path/to/webview-native-ui-cordova-plugin-0.1.4.tgz
+npm install /absolute/path/to/webview-native-ui-cordova-plugin-0.1.5.tgz
 ```
 
 Use the same archive for the Cordova plugin and Web bundler so their versions match.
@@ -203,6 +209,6 @@ Native checks install an actual npm archive into a temporary Cordova application
 
 `ci.yml` validates pull requests and main (JavaScript/package checks and iOS/Android builds). It does not publish to npm. `release.yml` publishes stable GitHub Releases through npm Trusted Publishing; draft and prerelease releases do not publish.
 
-For the next release, update `package.json`, `package-lock.json` and the root plugin version in `plugin.xml` together. Merge the change and wait for main CI to pass, then create a tag such as `v0.1.4` on that commit and publish its GitHub Release. The workflow requires the tag to match all package versions, rebuilds Core and the theme, runs JavaScript/package checks and publishes the generated archive. Native builds are covered by main CI; the release workflow does not rerun them. Published versions cannot be reused.
+For the next release, update `package.json`, `package-lock.json` and the root plugin version in `plugin.xml` together. Merge the change and wait for main CI to pass, then create a tag such as `v0.1.5` on that commit and publish its GitHub Release. The workflow requires the tag to match all package versions, rebuilds Core and the theme, runs JavaScript/package checks and publishes the generated archive. Native builds are covered by main CI; the release workflow does not rerun them. Published versions cannot be reused.
 
 The npm Trusted Publisher must specify GitHub organization `webview-native-ui`, repository `cordova-plugin`, and workflow filename `release.yml` (without the directory). Enable direct `npm publish` permission for this workflow. No GitHub environment is configured, so leave the optional environment field empty. Authentication uses `id-token: write`; no npm token secret is needed. Creating the workflow does not publish an existing version automatically.
