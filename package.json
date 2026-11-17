@@ -1,6 +1,6 @@
 {
   "name": "@webview-native-ui/cordova-plugin",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "Cordova adapter for WebView Native UI Core",
   "type": "module",
   "license": "MIT",
@@ -61,7 +61,7 @@
     "fetch:core": "node scripts/fetch-core.mjs"
   },
   "dependencies": {
-    "@webview-native-ui/engine": "1.0.10",
+    "@webview-native-ui/engine": "1.0.11",
     "@rdlabo/ionic-theme-utils": "0.1.5",
     "@stencil/core": "^4.43.5",
     "ionicons": "^8.1.0"
@@ -84,6 +84,6 @@
     "vitest": "^4.0.0",
     "prettier": "^3.6.2",
     "@rdlabo/ionic-theme-ios27": "2.2.0",
-    "@rdlabo/capacitor-native-ui": "2.1.9"
+    "@rdlabo/capacitor-native-ui": "2.1.11"
   }
 }
