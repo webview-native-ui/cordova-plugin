@@ -27,7 +27,7 @@ Add these preferences to your Cordova application's `config.xml` for Android:
 From your Cordova application root:
 
 ```sh
-cordova plugin add @webview-native-ui/cordova-plugin@0.1.1
+cordova plugin add @webview-native-ui/cordova-plugin@0.1.4
 ```
 
 This installs the prepared native and JavaScript assets and saves the npm dependency in the Cordova project. You do not need to clone this repository, fetch Core or build the plugin. Direct Git URL installation is not supported because generated assets are not committed.
@@ -35,7 +35,7 @@ This installs the prepared native and JavaScript assets and saves the npm depend
 If your Web bundler uses a separate npm project, install the same version there as well:
 
 ```sh
-npm install @webview-native-ui/cordova-plugin@0.1.1
+npm install @webview-native-ui/cordova-plugin@0.1.4
 ```
 
 When the Cordova app and bundler share a `package.json`, the dependency saved by `cordova plugin add` is sufficient. Keep `<script src="cordova.js"></script>` in your Cordova entry HTML, build your Web assets into the application's `www` directory, then run `cordova prepare` and rebuild the native app. Reloading Web assets alone does not update native code.
@@ -82,7 +82,7 @@ Android resume and configuration changes trigger the listener. No wallpaper or s
 
 ## Ionic iOS27 theme integration
 
-The plugin includes a Cordova-ready copy of `@rdlabo/ionic-theme-ios27@2.1.0`. Install this package alongside your existing Ionic dependencies; no separate theme package or bundler alias is required.
+The plugin includes a Cordova-ready copy of `@rdlabo/ionic-theme-ios27@2.2.0`. Install this package alongside your existing Ionic dependencies; no separate theme package or bundler alias is required.
 
 ```ts
 import { initialize } from '@ionic/core/components/index.js';
@@ -125,6 +125,25 @@ Optional helpers such as `attachTabBarSearchable` are also exported from `/theme
 
 The theme entry is for bundled applications. Do not mix its npm runtime with a separate `window.NativeUI.enableNativeUI()` runtime.
 
+## Toolbar button badges
+
+The bundled theme and shared Core support direct-child `ion-badge` elements in toolbar buttons:
+
+```html
+<ion-toolbar>
+  <ion-buttons slot="end">
+    <ion-button aria-label="3 notifications">
+      <ion-icon name="ellipsis-horizontal" slot="icon-only"></ion-icon>
+      <ion-badge color="primary">3</ion-badge>
+    </ion-button>
+  </ion-buttons>
+</ion-toolbar>
+```
+
+On supported iOS native Vertical Bars, badges retain their text or empty unread indicator and follow the source Ionic background and text colors. The Web rail fallback preserves the badge and its display state. Count changes, color-only changes, hiding and removal update the existing action. Use a completely empty `<ion-badge></ion-badge>` for an indicator, without spaces or line breaks inside it. Include notification state in the action's accessible label.
+
+Update both the Cordova project plugin and the Web project's npm dependency, run `cordova prepare`, and rebuild the native app. Loading new Web assets alone does not update the native renderer. The bundled theme is 2.2.0; installing a separate theme does not update the copy shipped here.
+
 ## Behavior and troubleshooting
 
 Supported Ionic controls can render natively on iOS 26+. Android standard controls keep their Web presentation; app-local Compose extensions are a separate capability. Unsupported controls also retain Web presentation. Styling the page with the theme does not imply every control becomes native.
@@ -155,7 +174,7 @@ For a bundled application, also install the same archive into the npm project th
 
 ```sh
 # Run in the Web application's npm project; use the archive produced above.
-npm install /absolute/path/to/webview-native-ui-cordova-plugin-0.1.1.tgz
+npm install /absolute/path/to/webview-native-ui-cordova-plugin-0.1.4.tgz
 ```
 
 Use the same archive for the Cordova plugin and Web bundler so their versions match.
