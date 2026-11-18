@@ -1,6 +1,6 @@
 # Cordova Native UI
 
-Render supported HTML and Ionic controls natively on iOS, or use Android device colors in your Cordova app. [Install the plugin](#install-from-npm), then [start Native UI](#start-native-ui) after Cordova and your Web app are ready.
+Render supported HTML and Ionic controls natively on iOS, or use Android Dynamic Color in your Cordova app. [Install the plugin](#install-from-npm), then [start Native UI](#start-native-ui) after Cordova and your Web app are ready.
 
 ## Requirements
 
@@ -152,7 +152,7 @@ Use the same archive for the Cordova plugin and Web bundler so their versions ma
 
 Thin Cordova adapter for the shared Native UI implementation in [capacitor-plugin](https://github.com/webview-native-ui/capacitor-plugin). Capacitor remains the primary implementation. This package adds Cordova callbacks, event subscriptions, installation metadata and lifecycle cleanup; it does not fork the renderers.
 
-The shared implementation is pinned to the Core commit included in Capacitor plugin **2.1.11**, with Engine **1.0.11** fixed across JavaScript, SwiftPM and Android Maven. This includes native and Web rail toolbar badges, current layout handling, iOS momentum cancellation and snapshot acquisition order. The exact Core commit is recorded in `core-source.json` and the packaged `shared/ORIGIN.json`.
+The shared implementation is pinned to the Core commit included in Capacitor plugin **2.1.11**, with Engine **1.0.11** fixed across JavaScript, SwiftPM and Android Maven. This includes native and Web rail toolbar button badges, current layout handling, iOS momentum cancellation and snapshot acquisition order. The exact Core commit is recorded in `core-source.json` and the packaged `shared/ORIGIN.json`.
 
 The initial version deliberately uses generated copies. The Core repository and commit are pinned in `core-source.json`. CI runs `npm run fetch:core` to clone that commit into `.upstream/`, then `npm run build` compiles its TypeScript and copies its Swift/Kotlin unchanged into `shared/`. The prepared npm archive is uploaded as the `cordova-native-ui` CI artifact. Capacitor is not a runtime dependency, and consumers do not clone or build Core. `shared/ORIGIN.json` records the Core repository and commit. Only `src/` contains Cordova-owned implementation. Do not edit generated `shared/`, `dist/` or `www/` files. Builds reject local modifications or extra files in the copied Core source directories and upstream LICENSE, including ignored files. Commit Core changes upstream and update the pinned SHA before distributing them. Changes outside those inputs, such as generated upstream documentation, do not block the build.
 
