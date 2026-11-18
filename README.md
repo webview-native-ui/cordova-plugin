@@ -27,7 +27,7 @@ Add these preferences to your Cordova application's `config.xml` for Android:
 From your Cordova application root:
 
 ```sh
-cordova plugin add @webview-native-ui/cordova-plugin@0.1.5
+cordova plugin add @webview-native-ui/cordova-plugin@0.1.6
 ```
 
 This installs the prepared native and JavaScript assets and saves the npm dependency in the Cordova project. You do not need to clone this repository, fetch Core or build the plugin. Direct Git URL installation is not supported because generated assets are not committed.
@@ -35,7 +35,7 @@ This installs the prepared native and JavaScript assets and saves the npm depend
 If your Web bundler uses a separate npm project, install the same version there as well:
 
 ```sh
-npm install @webview-native-ui/cordova-plugin@0.1.5
+npm install @webview-native-ui/cordova-plugin@0.1.6
 ```
 
 When the Cordova app and bundler share a `package.json`, the dependency saved by `cordova plugin add` is sufficient. Keep `<script src="cordova.js"></script>` in your Cordova entry HTML, build your Web assets into the application's `www` directory, then run `cordova prepare` and rebuild the native app. Reloading Web assets alone does not update native code.
@@ -82,7 +82,7 @@ Android resume and configuration changes trigger the listener. No wallpaper or s
 
 ## Migrating from the bundled iOS theme
 
-Through version 0.1.5, this plugin shipped an iOS theme. From the next release, applications select and install their own theme. Apps using only the Cordova Native UI API can keep their existing imports and startup.
+Through version 0.1.5, this plugin shipped an iOS theme. Starting with 0.1.6, applications select and install their own theme. Apps using only the Cordova Native UI API can keep their existing imports and startup.
 
 If your application imports the old theme entries:
 
@@ -114,7 +114,7 @@ Update both the Cordova project plugin and the Web project's npm dependency, run
 
 Version 0.1.5 includes Engine 1.0.11, which fixes modal rail button images turning opaque gray on iOS. Transparent modal captures retain their original Glass filtering; composited window captures keep the cold-launch workaround. No theme update or markup change is required.
 
-Update both the Cordova project plugin and the Web project's npm dependency to 0.1.5, run `cordova prepare`, and rebuild the native app. Web asset reloads alone do not update the native capture implementation.
+Update both the Cordova project plugin and the Web project's npm dependency to 0.1.5 or later, run `cordova prepare`, and rebuild the native app. Web asset reloads alone do not update the native capture implementation.
 
 ## Behavior and troubleshooting
 
@@ -145,7 +145,7 @@ For a bundled application, also install the same archive into the npm project th
 
 ```sh
 # Run in the Web application's npm project; use the archive produced above.
-npm install /absolute/path/to/webview-native-ui-cordova-plugin-0.1.5.tgz
+npm install /absolute/path/to/webview-native-ui-cordova-plugin-0.1.6.tgz
 ```
 
 Use the same archive for the Cordova plugin and Web bundler so their versions match.
@@ -174,6 +174,6 @@ Native checks install an actual npm archive into a temporary Cordova application
 
 `ci.yml` validates pull requests and main (JavaScript/package checks and iOS/Android builds). It does not publish to npm. `release.yml` publishes stable GitHub Releases through npm Trusted Publishing; draft and prerelease releases do not publish.
 
-For the next release, update `package.json`, `package-lock.json` and the root plugin version in `plugin.xml` together. Merge the change and wait for main CI to pass, then create a tag such as `v0.1.5` on that commit and publish its GitHub Release. The workflow requires the tag to match all package versions, rebuilds Core and the adapter, runs JavaScript/package checks and publishes the generated archive. Native builds are covered by main CI; the release workflow does not rerun them. Published versions cannot be reused.
+For the next release, update `package.json`, `package-lock.json` and the root plugin version in `plugin.xml` together. Merge the change and wait for main CI to pass, then create a tag such as `v0.1.6` on that commit and publish its GitHub Release. The workflow requires the tag to match all package versions, rebuilds Core and the adapter, runs JavaScript/package checks and publishes the generated archive. Native builds are covered by main CI; the release workflow does not rerun them. Published versions cannot be reused.
 
 The npm Trusted Publisher must specify GitHub organization `webview-native-ui`, repository `cordova-plugin`, and workflow filename `release.yml` (without the directory). Enable direct `npm publish` permission for this workflow. No GitHub environment is configured, so leave the optional environment field empty. Authentication uses `id-token: write`; no npm token secret is needed. Creating the workflow does not publish an existing version automatically.
