@@ -40,7 +40,7 @@ When the Cordova app and bundler share a `package.json`, the dependency saved by
 
 ## Start Native UI
 
-Cordova loads `window.NativeUI` from the bundled JavaScript module. Start after `deviceready`:
+Cordova loads `window.NativeUI` from the bundled JavaScript module. For a page whose controls are already in the DOM, start after `deviceready`:
 
 ```js
 document.addEventListener('deviceready', async () => {
@@ -48,6 +48,8 @@ document.addEventListener('deviceready', async () => {
   // Call await handle.destroy() when your application permanently stops using it.
 });
 ```
+
+For a framework app, wait for both `deviceready` and the first app mount before starting Native UI. Register the device-ready listener during startup and start the runtime once per app.
 
 Bundled applications can import `enableNativeUI` from `@webview-native-ui/cordova-plugin/core` (standard HTML), or the package root (Ionic integration). Use one entry style in an application. The `/integration` and `/vertical-bars` subpaths mirror the shared APIs. The browser bundle includes its JavaScript dependencies; npm ESM imports use the declared runtime dependencies. No Capacitor JavaScript runtime is required.
 
