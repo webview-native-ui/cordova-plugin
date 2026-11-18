@@ -8,7 +8,7 @@ The shared implementation is pinned to the Core commit included in Capacitor plu
 
 - Cordova CLI 13, cordova-ios 8.1+ with Swift Package Manager, or cordova-android 15+.
 - iOS native rendering requires iOS 26+ and Xcode 26+; older iOS uses the shared Web fallback. CocoaPods and older Cordova versions are not supported in this initial adapter.
-- Ionic integration/theme: `@ionic/core >=8.8.1 <10` in the application. The `/core` entry does not require Ionic.
+- Ionic integration: `@ionic/core >=8.8.1 <10` in the application. The `/core` entry does not require Ionic.
 - Android API 24+, SDK 36, JDK 21, Kotlin 2.2.20 and Compose. Android supports the shared app-local Compose extension path, not the iOS native toolbar/search feature set.
 
 Add these preferences to your Cordova application's `config.xml` for Android:
@@ -80,54 +80,20 @@ await subscription.remove();
 
 Android resume and configuration changes trigger the listener. No wallpaper or storage permissions are needed. Color extraction and role definitions are generated from the same pinned Capacitor source; the Cordova adapter only changes transport and lifecycle wiring.
 
-## Ionic iOS27 theme integration
+## Migrating from the bundled iOS theme
 
-The plugin includes a Cordova-ready copy of `@rdlabo/ionic-theme-ios27@2.2.0`. Install this package alongside your existing Ionic dependencies; no separate theme package or bundler alias is required.
+Through version 0.1.5, this plugin shipped an iOS theme. From the next release, applications select and install their own theme. Apps using only the Cordova Native UI API can keep their existing imports and startup.
 
-```ts
-import { initialize } from '@ionic/core/components/index.js';
-import { enableNativeUI } from '@webview-native-ui/cordova-plugin';
-import { iosTransitionAnimation, popoverEnterAnimation, popoverLeaveAnimation } from '@webview-native-ui/cordova-plugin/theme';
+If your application imports the old theme entries:
 
-// For an application using Ionic web components directly, before mounting:
-initialize({
-  mode: 'ios',
-  navAnimation: iosTransitionAnimation,
-  popoverEnter: popoverEnterAnimation,
-  popoverLeave: popoverLeaveAnimation,
-});
-
-// Register this during startup. appMounted resolves when your app has mounted ion-app.
-const deviceReady = new Promise<void>((resolve) => {
-  document.addEventListener('deviceready', () => resolve(), { once: true });
-});
-export async function startNativeUI(appMounted: Promise<void>) {
-  await Promise.all([deviceReady, appMounted]);
-  return enableNativeUI();
-}
-```
-
-Call `startNativeUI()` once from your application's startup and retain its returned handle; call `await handle.destroy()` when permanently stopping Native UI. `appMounted` is supplied by your application's mount lifecycle, not by this package. For Ionic Angular/React/Vue, pass the same animation configuration through the framework's Ionic initialization instead of separately calling `initialize()`. Continue using your framework's normal component registration.
-
-Keep Ionic's base CSS, then load the matching theme styles:
-
-```css
-@import '@ionic/core/css/palettes/dark.system.css';
-@import '@webview-native-ui/cordova-plugin/theme/css/default-variables.css';
-@import '@webview-native-ui/cordova-plugin/theme/css/ionic-theme-ios27.css';
-@import '@webview-native-ui/cordova-plugin/theme/css/md-remove-ios-class-effect.css';
-@import '@webview-native-ui/cordova-plugin/theme/css/ionic-theme-ios27-dark-system.css';
-```
-
-Configure Ionic with the theme animations before mounting the app, and call `enableNativeUI()` after `deviceready` and `ion-app` mounting. Existing theme users replace their theme JS/CSS imports with the paths above and remove the old integration alias. All theme helpers and styles come from the same pinned version. Native UI and the theme share one integration module automatically.
-
-Optional helpers such as `attachTabBarSearchable` are also exported from `/theme`; importing the theme does not automatically attach those behaviors. If you use class-based dark mode, replace both system palette imports with `@ionic/core/css/palettes/dark.class.css` and `@webview-native-ui/cordova-plugin/theme/css/ionic-theme-ios27-dark-class.css` and toggle `ion-palette-dark` on `html`.
-
-The theme entry is for bundled applications. Do not mix its npm runtime with a separate `window.NativeUI.enableNativeUI()` runtime.
+1. Install `@rdlabo/ionic-theme-ios27` in the Web project. Pin `2.2.0` to keep the theme version bundled with Cordova 0.1.5.
+2. Replace CSS imports from `@webview-native-ui/cordova-plugin/theme/css/*` with the corresponding `@rdlabo/ionic-theme-ios27/dist/css/*` files. Keep your current light/dark palette.
+3. Import JavaScript helpers from `@rdlabo/ionic-theme-ios27`. If using its JavaScript integration, configure your Web bundler to resolve the exact import `@rdlabo/capacitor-native-ui/integration` to `@webview-native-ui/cordova-plugin/integration` so the theme and Cordova share runtime state.
+4. Keep `enableNativeUI` imported from `@webview-native-ui/cordova-plugin` and start it once after `deviceready` and app mounting. Rebuild the Web assets and prepare the Cordova app.
 
 ## Toolbar button badges
 
-The bundled theme and shared Core support direct-child `ion-badge` elements in toolbar buttons:
+Shared Core supports direct-child `ion-badge` elements in toolbar buttons:
 
 ```html
 <ion-toolbar>
@@ -142,7 +108,7 @@ The bundled theme and shared Core support direct-child `ion-badge` elements in t
 
 On supported iOS native Vertical Bars, badges retain their text or empty unread indicator and follow the source Ionic background and text colors. The Web rail fallback preserves the badge and its display state. Count changes, color-only changes, hiding and removal update the existing action. Use a completely empty `<ion-badge></ion-badge>` for an indicator, without spaces or line breaks inside it. Include notification state in the action's accessible label.
 
-Update both the Cordova project plugin and the Web project's npm dependency, run `cordova prepare`, and rebuild the native app. Loading new Web assets alone does not update the native renderer. The bundled theme is 2.2.0; installing a separate theme does not update the copy shipped here.
+Update both the Cordova project plugin and the Web project's npm dependency, run `cordova prepare`, and rebuild the native app. Loading new Web assets alone does not update the native renderer.
 
 ## Modal snapshot fix
 
@@ -156,7 +122,6 @@ Supported Ionic controls can render natively on iOS 26+. Android standard contro
 
 - **Imports cannot resolve:** check that `@webview-native-ui/cordova-plugin` is installed in the npm project that builds your Web assets; a separate Web project needs its own npm install of the same version. Source-only Git installation does not contain generated assets.
 - **Native UI stays in Web mode on supported iOS:** check that `cordova.js` is loaded, startup waits for `deviceready`, and the native app was rebuilt after plugin installation. Inspect `handle.getStatus()`.
-- **Theme helpers do not coordinate with native controls:** use `/theme` for all theme imports and start only one runtime. Remove the old integration alias and avoid mixing the original theme package or `window.NativeUI` startup with npm startup.
 - **Native controls are offset:** check page safe-area spacing; the adapter disables automatic scroll-view insets to keep CSS and native coordinates aligned.
 
 Local comparisons covered Ionic 8.8.19 on iOS 27.2 and Android API 35: controls, tabs, overlays, theme integration, dark mode and stop/restart. Search used the theme's Web fallback on both hosts. These checks do not establish native-search parity, complete framework-router transitions or interactive back gestures.
@@ -187,11 +152,11 @@ Use the same archive for the Cordova plugin and Web bundler so their versions ma
 
 ## Shared source and updates
 
-The initial version deliberately uses generated copies. The Core repository and commit are pinned in `core-source.json`. CI runs `npm run fetch:core` to clone that commit into `.upstream/`, then `npm run build` compiles its TypeScript and copies its Swift/Kotlin unchanged into `shared/`. The prepared npm archive is uploaded as the `cordova-native-ui` CI artifact. Capacitor is not a runtime dependency, and consumers do not clone or build Core. `shared/ORIGIN.json` records the Core commit and theme package version. The theme JS, declarations and CSS are copied from its pinned npm build, with only integration imports redirected to the local Core. Its license is included. Only `src/` contains Cordova-owned implementation. Do not edit generated `shared/`, `dist/` or `www/` files. Builds reject local modifications or extra files in the copied Core source directories and upstream LICENSE, including ignored files. Commit Core changes upstream and update the pinned SHA before distributing them. Changes outside those inputs, such as generated upstream documentation, do not block the build.
+The initial version deliberately uses generated copies. The Core repository and commit are pinned in `core-source.json`. CI runs `npm run fetch:core` to clone that commit into `.upstream/`, then `npm run build` compiles its TypeScript and copies its Swift/Kotlin unchanged into `shared/`. The prepared npm archive is uploaded as the `cordova-native-ui` CI artifact. Capacitor is not a runtime dependency, and consumers do not clone or build Core. `shared/ORIGIN.json` records the Core repository and commit. Only `src/` contains Cordova-owned implementation. Do not edit generated `shared/`, `dist/` or `www/` files. Builds reject local modifications or extra files in the copied Core source directories and upstream LICENSE, including ignored files. Commit Core changes upstream and update the pinned SHA before distributing them. Changes outside those inputs, such as generated upstream documentation, do not block the build.
 
 Directly depending on the Capacitor repository's Core SPM product conflicts with cordova-ios because its dependency graph also contains capacitor-swift-pm's `Cordova` target. The local Core target avoids that graph collision while preserving one upstream editing source. This repository is installed through Cordova, not directly as a GitHub Swift Package: its shared Swift assets are generated by the build.
 
-To update Core, change the pinned Git commit in `core-source.json`, run `npm run fetch:core`, then `npm run build`, `npm test`, `npm run test:package` and both native checks. The theme build input is separately pinned in `devDependencies` and the lockfile. Updating it requires rebuilding and verifying the package; generated theme files are never edited by hand. All three Core languages use the same upstream commit; native archive checks compare the copies byte-for-byte. Publishing a new Cordova package is required to distribute a Core update. If this becomes costly, move Core into an independently versioned package rather than adding manual patches here.
+To update Core, change the pinned Git commit in `core-source.json`, run `npm run fetch:core`, then `npm run build`, `npm test`, `npm run test:package` and both native checks. All three Core languages use the same upstream commit; native archive checks compare the copies byte-for-byte. Publishing a new Cordova package is required to distribute a Core update. If this becomes costly, move Core into an independently versioned package rather than adding manual patches here.
 
 ## Validation
 
@@ -203,12 +168,12 @@ node scripts/verify-native.mjs ios
 node scripts/verify-native.mjs android
 ```
 
-Native checks install an actual npm archive into a temporary Cordova application and build it. Android uses `gradle` from PATH, or the explicit `NATIVE_UI_GRADLE` executable. The fixture exercises configuration, callbacks, listener disposal, invalid listener requests and a full WebView reload; it reports `NATIVE_UI_SMOKE_OK` when launched. CI builds both platform consumers; it does not launch the fixture or automate simulator/emulator operations. `npm run test:package` additionally checks theme JS/CSS exports and TypeScript imports from the packed archive, including that the theme and plugin resolve to one integration module without aliases. Shared renderer tests remain upstream; this package tests the adapter boundary and distribution paths.
+Native checks install an actual npm archive into a temporary Cordova application and build it. Android uses `gradle` from PATH, or the explicit `NATIVE_UI_GRADLE` executable. The fixture exercises configuration, callbacks, listener disposal, invalid listener requests and a full WebView reload; it reports `NATIVE_UI_SMOKE_OK` when launched. CI builds both platform consumers; it does not launch the fixture or automate simulator/emulator operations. `npm run test:package` additionally checks the adapter exports and TypeScript imports from the packed archive and verifies that it excludes the theme. Shared renderer tests remain upstream; this package tests the adapter boundary and distribution paths.
 
 ## Releases
 
 `ci.yml` validates pull requests and main (JavaScript/package checks and iOS/Android builds). It does not publish to npm. `release.yml` publishes stable GitHub Releases through npm Trusted Publishing; draft and prerelease releases do not publish.
 
-For the next release, update `package.json`, `package-lock.json` and the root plugin version in `plugin.xml` together. Merge the change and wait for main CI to pass, then create a tag such as `v0.1.5` on that commit and publish its GitHub Release. The workflow requires the tag to match all package versions, rebuilds Core and the theme, runs JavaScript/package checks and publishes the generated archive. Native builds are covered by main CI; the release workflow does not rerun them. Published versions cannot be reused.
+For the next release, update `package.json`, `package-lock.json` and the root plugin version in `plugin.xml` together. Merge the change and wait for main CI to pass, then create a tag such as `v0.1.5` on that commit and publish its GitHub Release. The workflow requires the tag to match all package versions, rebuilds Core and the adapter, runs JavaScript/package checks and publishes the generated archive. Native builds are covered by main CI; the release workflow does not rerun them. Published versions cannot be reused.
 
 The npm Trusted Publisher must specify GitHub organization `webview-native-ui`, repository `cordova-plugin`, and workflow filename `release.yml` (without the directory). Enable direct `npm publish` permission for this workflow. No GitHub environment is configured, so leave the optional environment field empty. Authentication uses `id-token: write`; no npm token secret is needed. Creating the workflow does not publish an existing version automatically.
