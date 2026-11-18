@@ -96,13 +96,12 @@ try {
   const consumer = join(temporary, 'consumer');
   mkdirSync(dirname(join(consumer, 'node_modules', manifest.name)), { recursive: true });
   symlinkSync(root, join(consumer, 'node_modules', manifest.name), 'dir');
-  const themeBuild = await build({
+  const adapterBuild = await build({
     stdin: {
       contents: `
         import { enableNativeUI } from '${manifest.name}';
-        import { iosTransitionAnimation, attachTabBarSearchable } from '${manifest.name}/theme';
-        import '${manifest.name}/theme/css/ionic-theme-ios27.css';
-        globalThis.packageSmoke = { enableNativeUI, iosTransitionAnimation, attachTabBarSearchable };
+        import * as integration from '${manifest.name}/integration';
+        globalThis.packageSmoke = { enableNativeUI, integration };
       `,
       resolveDir: consumer,
       loader: 'ts',
@@ -115,17 +114,17 @@ try {
     metafile: true,
     logLevel: 'silent',
   });
-  const integrations = Object.keys(themeBuild.metafile.inputs).filter((path) => path.endsWith('native-integration/index.js'));
-  assert.equal(integrations.length, 1, 'Packed theme and Cordova must share exactly one integration module');
+  const integrations = Object.keys(adapterBuild.metafile.inputs).filter((path) => path.endsWith('native-integration/index.js'));
+  assert.equal(integrations.length, 1, 'The public integration entry must use the adapter integration module');
   assert(
-    !Object.keys(themeBuild.metafile.inputs).some((path) =>
+    !Object.keys(adapterBuild.metafile.inputs).some((path) =>
       /node_modules\/(?:@capacitor|@rdlabo\/(?:capacitor-native-ui|ionic-theme-ios27))\//.test(path),
     ),
   );
   const declaration = join(consumer, 'consumer.ts');
   writeFileSync(
     declaration,
-    `import { enableNativeUI } from '${manifest.name}';\nimport { iosTransitionAnimation, attachTabBarSearchable } from '${manifest.name}/theme';\nvoid [enableNativeUI, iosTransitionAnimation, attachTabBarSearchable];\n`,
+    `import { enableNativeUI } from '${manifest.name}';\nimport * as integration from '${manifest.name}/integration';\nvoid [enableNativeUI, integration];\n`,
   );
   const program = ts.createProgram([declaration], {
     noEmit: true,
@@ -145,7 +144,8 @@ try {
       getNewLine: () => '\n',
     }),
   );
-  assert(existsSync(join(root, 'shared/theme/LICENSE')));
+  assert(!existsSync(join(root, 'shared/theme')));
+  assert(!Object.keys(manifest.exports).some((entry) => entry.startsWith('./theme')));
   const module = { exports: {} };
   vm.runInNewContext(readFileSync(join(root, 'www/native-ui.js'), 'utf8'), {
     module,
@@ -160,7 +160,7 @@ try {
   assert.equal(typeof module.exports.addDynamicColorListener, 'function');
   const origin = JSON.parse(readFileSync(join(root, 'shared/ORIGIN.json'), 'utf8'));
   assert.equal(origin.revision, JSON.parse(readFileSync('core-source.json', 'utf8')).revision);
-  assert.equal(origin.theme.version, manifest.devDependencies['@rdlabo/ionic-theme-ios27']);
+  assert(!('theme' in origin));
   console.log('Cordova archive resources, bundled API, Core provenance and native sources verified.');
 } finally {
   rmSync(temporary, { recursive: true, force: true });

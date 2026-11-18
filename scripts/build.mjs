@@ -3,7 +3,6 @@ import { cpSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { resolve, join } from 'node:path';
 import ts from 'typescript';
 import { build } from 'esbuild';
-import { copyTheme } from './lib/copy-theme.mjs';
 import { copyDynamicColors } from './lib/copy-dynamic-colors.mjs';
 
 const upstream = resolve('.upstream');
@@ -59,8 +58,7 @@ cpSync(join(upstream, 'packages/native-ui-core/android/src/main/java'), 'shared/
 cpSync(join(upstream, 'packages/native-ui-core/ios/Sources/NativeUICore'), 'shared/ios', { recursive: true });
 cpSync(join(upstream, 'LICENSE'), 'shared/LICENSE');
 copyDynamicColors(upstream);
-const theme = copyTheme();
-writeFileSync('shared/ORIGIN.json', JSON.stringify({ repository, revision, theme }, null, 2) + '\n');
+writeFileSync('shared/ORIGIN.json', JSON.stringify({ repository, revision }, null, 2) + '\n');
 compile('src', 'dist');
 mkdirSync('www', { recursive: true });
 await build({

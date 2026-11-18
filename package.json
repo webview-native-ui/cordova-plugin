@@ -1,6 +1,6 @@
 {
   "name": "@webview-native-ui/cordova-plugin",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "description": "Cordova adapter for WebView Native UI Core",
   "type": "module",
   "license": "MIT",
@@ -45,12 +45,7 @@
     "./vertical-bars": {
       "types": "./dist/vertical-bars.d.ts",
       "import": "./dist/vertical-bars.js"
-    },
-    "./theme": {
-      "types": "./shared/theme/index.d.ts",
-      "import": "./shared/theme/index.js"
-    },
-    "./theme/css/*": "./shared/theme/css/*"
+    }
   },
   "scripts": {
     "build": "node scripts/build.mjs",
@@ -61,10 +56,8 @@
     "fetch:core": "node scripts/fetch-core.mjs"
   },
   "dependencies": {
-    "@webview-native-ui/engine": "1.0.11",
     "@rdlabo/ionic-theme-utils": "0.1.5",
-    "@stencil/core": "^4.43.5",
-    "ionicons": "^8.1.0"
+    "@webview-native-ui/engine": "1.0.11"
   },
   "peerDependencies": {
     "@ionic/core": ">=8.8.1 <10"
@@ -77,13 +70,11 @@
   "devDependencies": {
     "@ionic/core": "8.8.19",
     "cordova": "13.0.0",
-    "cordova-ios": "8.1.1",
     "cordova-android": "15.1.0",
-    "typescript": "^5.9.3",
+    "cordova-ios": "8.1.1",
     "esbuild": "0.28.1",
-    "vitest": "^4.0.0",
     "prettier": "^3.6.2",
-    "@rdlabo/ionic-theme-ios27": "2.2.0",
-    "@rdlabo/capacitor-native-ui": "2.1.11"
+    "typescript": "^5.9.3",
+    "vitest": "^4.0.0"
   }
 }
