@@ -1,6 +1,6 @@
 # Cordova Native UI
 
-Render supported HTML and Ionic controls natively on iOS, or use Android Dynamic Color in your Cordova app. [Install the plugin](#install-from-npm), then [start Native UI](#start-native-ui) after Cordova and your Web app are ready.
+Render supported HTML and Ionic controls natively on iOS, or use Android Dynamic Color in your Cordova app. [Install the plugin](https://webview-native-ui.com/projects/cordova-native-ui/docs/readme#install-the-same-version-in-both-projects), then [start Native UI](https://webview-native-ui.com/projects/cordova-native-ui/docs/readme#start-after-cordova-is-ready) after Cordova and your Web app are ready.
 
 ## Requirements
 
@@ -53,7 +53,7 @@ For a framework app, wait for both `deviceready` and the first app mount before 
 
 Bundled applications can import `enableNativeUI` from `@webview-native-ui/cordova-plugin/core` (standard HTML), or the package root (Ionic integration). Use one entry style in an application. The `/integration` and `/vertical-bars` subpaths mirror the shared APIs. The browser bundle includes its JavaScript dependencies; npm ESM imports use the declared runtime dependencies. No Capacitor JavaScript runtime is required.
 
-App-local Swift renderers use `import CordovaNativeUI` and `NativeUI.register(...)`. Android renderers retain the shared `dev.rdlabo.capacitor.nativeui.NativeUI` namespace for compatibility; this name does not imply an Android Capacitor SDK dependency. See the [shared extension documentation](https://github.com/webview-native-ui/capacitor-plugin/blob/main/docs/native-ui-extensions.md) for renderer contracts.
+App-local Swift renderers use `import CordovaNativeUI` and `NativeUI.register(...)`. Android renderers retain the shared `dev.rdlabo.capacitor.nativeui.NativeUI` namespace for compatibility; this name does not imply an Android Capacitor SDK dependency. See the [shared extension documentation](https://webview-native-ui.com/projects/capacitor-native-ui/docs/native-ui-extensions) for renderer contracts.
 
 On iOS, native activation stops WebView momentum by default. Pass `stopScrollOnActivate: false` to `enableNativeUI()` to preserve momentum. A new gesture resumes scrolling normally; no explicit resume call is needed.
 
