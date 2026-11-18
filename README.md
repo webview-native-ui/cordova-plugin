@@ -1,6 +1,6 @@
 # Cordova Native UI
 
-Render supported HTML and Ionic controls natively on iOS, or use Android Dynamic Color in your Cordova app. [Install the plugin](https://webview-native-ui.com/projects/cordova-native-ui/docs/readme#install-the-same-version-in-both-projects), then [start Native UI](https://webview-native-ui.com/projects/cordova-native-ui/docs/readme#start-after-cordova-is-ready) after Cordova and your Web app are ready.
+Render supported HTML and Ionic controls natively on iOS, or use Android Dynamic Color in your Cordova app. [Install the plugin](https://webview-native-ui.com/projects/cordova-native-ui/docs/readme#install-the-same-version-in-both-projects). For native controls, [start Native UI](https://webview-native-ui.com/projects/cordova-native-ui/docs/readme#start-after-cordova-is-ready) after Cordova and your Web app are ready. To read the Android palette on its own, use the [Android Dynamic Color API](#android-dynamic-color) after device readiness.
 
 ## Requirements
 
