@@ -25,7 +25,7 @@ Add these preferences to your Cordova application's `config.xml` for Android:
 From your Cordova application root:
 
 ```sh
-cordova plugin add @webview-native-ui/cordova-plugin@0.1.6
+cordova plugin add @webview-native-ui/cordova-plugin@0.1.7
 ```
 
 This installs the prepared native and JavaScript assets and saves the npm dependency in the Cordova project. You do not need to clone this repository, fetch Core or build the plugin. Direct Git URL installation is not supported because generated assets are not committed.
@@ -33,7 +33,7 @@ This installs the prepared native and JavaScript assets and saves the npm depend
 If your Web bundler uses a separate npm project, install the same version there as well:
 
 ```sh
-npm install @webview-native-ui/cordova-plugin@0.1.6
+npm install @webview-native-ui/cordova-plugin@0.1.7
 ```
 
 When the Cordova app and bundler share a `package.json`, the dependency saved by `cordova plugin add` is sufficient. Keep `<script src="cordova.js"></script>` in your Cordova entry HTML, build your Web assets into the application's `www` directory, then run `cordova prepare` and rebuild the native app. Reloading Web assets alone does not update native code.

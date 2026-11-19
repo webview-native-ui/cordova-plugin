@@ -19,7 +19,7 @@ For a bundled application, also install the same archive into the npm project th
 
 ```sh
 # Run in the Web application's npm project; use the archive produced above.
-npm install /absolute/path/to/webview-native-ui-cordova-plugin-0.1.6.tgz
+npm install /absolute/path/to/webview-native-ui-cordova-plugin-0.1.7.tgz
 ```
 
 Use the same archive for the Cordova plugin and Web bundler so their versions match.
@@ -28,7 +28,7 @@ Use the same archive for the Cordova plugin and Web bundler so their versions ma
 
 Thin Cordova adapter for the shared Native UI implementation in [capacitor-plugin](https://github.com/webview-native-ui/capacitor-plugin). Capacitor remains the primary implementation. This package adds Cordova callbacks, event subscriptions, installation metadata and lifecycle cleanup; it does not fork the renderers.
 
-The shared implementation is pinned to the Core commit included in Capacitor plugin **2.1.11**, with Engine **1.0.11** fixed across JavaScript, SwiftPM and Android Maven. This includes native and Web rail toolbar button badges, current layout handling, iOS momentum cancellation and snapshot acquisition order. The exact Core commit is recorded in `core-source.json` and the packaged `shared/ORIGIN.json`.
+The shared implementation is pinned to the Core commit included in Capacitor plugin **2.1.12**, with Engine **1.0.11** fixed across JavaScript, SwiftPM and Android Maven. This includes foreground colors for system rail actions and capture updates during virtual list recycling. The exact Core commit is recorded in `core-source.json` and the packaged `shared/ORIGIN.json`.
 
 The initial version deliberately uses generated copies. The Core repository and commit are pinned in `core-source.json`. CI runs `npm run fetch:core` to clone that commit into `.upstream/`, then `npm run build` compiles its TypeScript and copies its Swift/Kotlin unchanged into `shared/`. The prepared npm archive is uploaded as the `cordova-native-ui` CI artifact. Capacitor is not a runtime dependency, and consumers do not clone or build Core. `shared/ORIGIN.json` records the Core repository and commit. Only `src/` contains Cordova-owned implementation. Do not edit generated `shared/`, `dist/` or `www/` files. Builds reject local modifications or extra files in the copied Core source directories and upstream LICENSE, including ignored files. Commit Core changes upstream and update the pinned SHA before distributing them. Changes outside those inputs, such as generated upstream documentation, do not block the build.
 
@@ -52,6 +52,6 @@ Native checks install an actual npm archive into a temporary Cordova application
 
 `ci.yml` validates pull requests and main (JavaScript/package checks and iOS/Android builds). It does not publish to npm. `release.yml` publishes stable GitHub Releases through npm Trusted Publishing; draft and prerelease releases do not publish.
 
-For the next release, update `package.json`, `package-lock.json` and the root plugin version in `plugin.xml` together. Merge the change and wait for main CI to pass, then create a tag such as `v0.1.6` on that commit and publish its GitHub Release. The workflow requires the tag to match all package versions, rebuilds Core and the adapter, runs JavaScript/package checks and publishes the generated archive. Native builds are covered by main CI; the release workflow does not rerun them. Published versions cannot be reused.
+For the next release, update `package.json`, `package-lock.json` and the root plugin version in `plugin.xml` together. Merge the change and wait for main CI to pass, then create a tag such as `v0.1.7` on that commit and publish its GitHub Release. The workflow requires the tag to match all package versions, rebuilds Core and the adapter, runs JavaScript/package checks and publishes the generated archive. Native builds are covered by main CI; the release workflow does not rerun them. Published versions cannot be reused.
 
 The npm Trusted Publisher must specify GitHub organization `webview-native-ui`, repository `cordova-plugin`, and workflow filename `release.yml` (without the directory). Enable direct `npm publish` permission for this workflow. No GitHub environment is configured, so leave the optional environment field empty. Authentication uses `id-token: write`; no npm token secret is needed. Creating the workflow does not publish an existing version automatically.
